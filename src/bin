@@ -1,0 +1,267 @@
+
+// const [{data, meta, loading, error}, getResaurants] = useGet<Restaurant[]>("/restaurants", {
+//  lazzy: true,
+//  name: "/top_indian_restaurants" (defaults to "/restaurants"),
+//  onComplete:
+//  query: {
+//    page_no: 1,
+//    rating: ["gte", 4],
+//    type: ["eq", "indian"]
+//    location: ["in", ["afi", "zona_afi"]]
+//    sort_by: ["email", "asc"]
+//
+//    where: ["rating", "type"],
+//    op: ["gte", "eq"],
+//    rhs: [4, "indian"]
+//  }
+// })
+
+// const [{data, loading, error}, postRestarurant] = usePost<Restaurant>("/restaurants", {
+//  refetch: [],
+//  update: (cache, data) => {
+//    const inCache = cache.read("/restaurants");
+//    cache.write("/restaurants", produce(inCache, draft => draft.data.push(data)))
+//  }
+// })
+// postRestarurant({})
+//
+//
+// {
+//  /restaurants
+//  /restaurants/1
+//  /restaurants/1/reviews { page_no: 1 where: rating, op: eq, rhs: 5 }
+//  /my_custom
+// }
+//
+// POST /restaurants
+// DELETE /restaurants/1
+// POST /reviews
+// DELETE /reviews/1
+
+
+// interface UseGetParams {
+//   lazy: boolean
+//   name: string
+// }
+
+// function useGet<T = any>(
+//   resource: string,
+//   options?: RequestOptions,
+//   name?: string
+// ): RequestState<T> {
+//   const { url } = useContext(VoyagerContext)
+//   const { value: cache } = useContext(VoyagerCache)
+//   const [authData] = useAuthData<AuthData>()
+//
+//   const [getState, setGetState] = useState<RequestState<T>>({
+//     loading: true,
+//     data: null,
+//     meta: null,
+//     err: null
+//   })
+//
+//   async function doGet({ silent }: { silent: boolean }) {
+//     if (!silent) setGetState((prev) => ({ ...prev, loading: true }))
+//     const endpoint = buildEndpoint(url, resource, options)
+//
+//     const [err, res] = await to(
+//       fetch(endpoint, {
+//         method: 'GET',
+//         headers: {
+//           Authorization: `Bearer ${authData?.token}`
+//         }
+//       })
+//     )
+//     if (err) {
+//       setGetState({
+//         loading: false,
+//         data: null,
+//         meta: null,
+//         err: err.message
+//       })
+//       throw new Error(err.message)
+//     } else {
+//       const data = await res?.json()
+//       if (res?.status === 200) {
+//         setGetState({
+//           loading: false,
+//           data: data.data,
+//           meta: data.meta,
+//           err: null
+//         })
+//       } else {
+//         setGetState({
+//           loading: false,
+//           data: null,
+//           meta: null,
+//           err: data.message
+//         })
+//         throw new Error(data.message)
+//       }
+//     }
+//   }
+//
+//   useEffect(() => {
+//     // This is called twice on initial load
+//     // once to do the actuall fetch
+//     // second because of the cache firts update
+//     // TODO fix this
+//
+//     const endpoint = buildEndpoint(url, resource, options)
+//
+//     if (name !== undefined && cache[name]) {
+//       if (cache[resource]) {
+//         // setGetState({
+//         //   loading: false,
+//         //   data: cache[resource].data as T,
+//         //   meta: cache[resource].meta,
+//         //   err: null
+//         // })
+//       }
+//     } else {
+//       fetch(endpoint, {
+//         method: 'GET',
+//         headers: {
+//           Authorization: `Bearer ${authData?.token}`
+//         }
+//       })
+//         .then((r) => {
+//           if (r.status === 200) {
+//             return r.json()
+//           } else {
+//             throw Error(r.statusText)
+//           }
+//         })
+//         .then((d) => {
+//           // setCache((prev: Cache) =>
+//           //   produce(prev, (draft) => {
+//           //     const cacheEntry = {
+//           //       queryParams: options?.query,
+//           //       response: d
+//           //     }
+//           //     if (draft.value[resource] === undefined) {
+//           //       draft.value[resource] = [cacheEntry]
+//           //     } else {
+//           //       draft.value[resource].push(cacheEntry)
+//           //     }
+//           //   })
+//           // )
+//           // setCache!((prev: Cache) => ({
+//           //   ...prev,
+//           //   value: { ...prev.value, [resource]: d }
+//           // }))
+//           setGetState({
+//             loading: false,
+//             data: d.data,
+//             meta: d.meta,
+//             err: null
+//           })
+//         })
+//         .catch((e) => {
+//           setGetState({ loading: false, data: null, err: e.message })
+//         })
+//     }
+//   }, [cache [>authData<]])
+//
+//   return getState
+// }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+    // return new Promise<T>((resolve, resject) => {
+    //   fetch(endpoint, {
+    //     method: verb,
+    //     body: JSON.stringify(body),
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       Authorization: `Bearer ${authData?.token}`
+    //     }
+    //   })
+    //     .then((r) => {
+    //       if (r.status === 200) {
+    //         return r.json()
+    //       } else {
+    //         throw Error(r.statusText)
+    //       }
+    //     })
+    //     .then((data) => {
+    //       setRequestState({ loading: false, data, err: null })
+    //       // if (verb === 'POST') {
+    //       //   setCache!((prev: Cache) => ({
+    //       //     ...prev,
+    //       //     value: {
+    //       //       ...prev.value,
+    //       //       [resource]: {
+    //       //         ...prev.value[resource],
+    //       //         data: [...prev.value[resource].data, data],
+    //       //         meta: {
+    //       //           ...prev.value[resource].meta,
+    //       //           total: prev.value[resource].meta!.total + 1
+    //       //         }
+    //       //       }
+    //       //     }
+    //       //   }))
+    //       // }
+    //       // if (verb === 'DELETE') {
+    //       //   setCache!((prev: Cache) => ({
+    //       //     ...prev,
+    //       //     value: {
+    //       //       ...prev.value,
+    //       //       [resource]: {
+    //       //         ...prev.value[resource],
+    //       //         data: prev.value[resource].data.filter(
+    //       //           (i: any) => i._id !== id
+    //       //         ),
+    //       //         meta: {
+    //       //           ...prev.value[resource].meta,
+    //       //           total: prev.value[resource].meta!.total - 1
+    //       //         }
+    //       //       }
+    //       //     }
+    //       //   }))
+    //       // }
+    //       resolve(data)
+    //     })
+    //     .catch((err) => {
+    //       setRequestState({ loading: false, data: null, err })
+    //       resject(err)
+    //     })
+    // })

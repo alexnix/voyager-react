@@ -6,6 +6,7 @@ interface Meta {
 
 export interface RequestState<T = any> {
   loading: boolean
+  called?: boolean
   data: null | T
   meta?: null | Meta
   err: null | any
@@ -16,20 +17,34 @@ export interface VoyagerGetResult<T> {
   meta?: Meta
 }
 
+export type Filter = [
+  'eq' | 'neq' | 'regex' | 'in' | 'gt' | 'gte' | 'lt' | 'lte',
+  string | number | null | Array<string | number | null>
+]
+
+export type Sort = [string, 'asc' | 'desc']
+
+export interface FilterObj {
+  [key: string]: Filter
+}
+
 export interface QueryParameters {
-  select?: string[]
-  where?: string
-  op?: 'eq' | 'neq' | 'regex'
-  rhs?: string
-  sort?: string
-  order?: 'asc' | 'desc'
-  page_size?: number
-  page_no?: number
+  select: string[]
+  page_size: number
+  page_no: number
+  sort_by: Sort
+  filter: FilterObj
 }
 
 export interface RequestOptions {
-  query?: QueryParameters
-  onCompleted?: (data: any) => void
+  query: Partial<QueryParameters>
+  lazy: boolean
+  policy: 'cache-first' | 'cache-and-network' | 'network-first' | 'no-cache'
+  alias?: string
+}
+
+export type Full<T> = {
+  [P in keyof T]: T[P]
 }
 
 export interface LoginHook {
@@ -57,7 +72,33 @@ export interface VoyagerProviderProps {
 export interface Cache {
   setCache?: any
   value: {
-    [key: string]: VoyagerGetResult<any>
+    [key: string]: {
+      data: Array<object>
+      requests: {
+        [key: string]: {
+          queryParams: QueryParameters
+        }
+      }
+    }
   }
 }
 
+// export interface Cache {
+//   setCache?: any
+//   value: {
+//     // resource
+//     [key: string]: {
+//       // sorting
+//       [key: string]: {
+//         data: any[]
+//         requests: {
+//           //actual request
+//           [key: string]: {
+//             queryParams?: QueryParameters
+//             response: VoyagerGetResult<any>
+//           }
+//         }
+//       }
+//     }
+//   }
+// }

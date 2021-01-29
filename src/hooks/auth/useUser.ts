@@ -1,4 +1,9 @@
-function useDelete() {}
+import useAuthData from '../localStorage/useAuthData'
+import { AuthData } from '../../types'
 
-export default useDelete
+function useUser() {
+  const [authData] = useAuthData<AuthData>()
+  return authData?.user
+}
 
+export default useUser

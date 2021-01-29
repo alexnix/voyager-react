@@ -4,7 +4,7 @@ import VoyagerContext from './VoyagerContext'
 import VoyagerCache from './VoyagerCache'
 
 import { useGet, usePost, usePut, useDetlete, useLazyGet } from './hooks/api'
-import { useLogin, useRegister } from './hooks/auth'
+import { useLogin, useRegister, useUser, useLogout } from './hooks/auth'
 
 import { VoyagerProviderProps } from './types'
 
@@ -32,5 +32,7 @@ export {
   useDetlete,
   useLazyGet,
   useLogin,
-  useRegister
+  useRegister,
+  useUser,
+  useLogout
 }

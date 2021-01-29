@@ -6,7 +6,9 @@ import {
   usePost,
   useLogin,
   useRegister,
-  useDetlete
+  useDetlete,
+  useUser,
+  useLogout
 } from 'voyager'
 
 interface Restaurant {
@@ -61,9 +63,19 @@ const RestaurantList = ({ data }: RestaurantListProps) => {
 }
 
 const RestaurantsListWrapper = () => {
-  const { data, meta, loading, err } = useGet<Restaurant[]>('restaurants', {})
+  const [{ data, meta, called, loading, err }] = useGet<Restaurant[]>(
+    'restaurants'
+  )
+
+  const a = 1
+
+  React.useEffect(() => {
+    console.log('hi')
+  }, [a])
 
   console.log(data, err)
+
+  if (!called) return null
 
   if (loading) return <RestaurantsListLoading />
   if (err) return <p>{JSON.stringify(err)}</p>
@@ -87,9 +99,9 @@ const Create = () => {
   return (
     <button
       onClick={() => {
-        createRestaurant({ body: { name: 'La Fam' } }).catch((err) =>
-          alert(err.message)
-        )
+        createRestaurant({
+          body: { name: 'La Fam' + Math.random() * 1000, image: 'http' }
+        }).catch((err) => alert(err.message))
       }}
     >
       Create
@@ -100,11 +112,20 @@ const Create = () => {
 const Main = () => {
   const { login, loading } = useLogin()
   const { register, loading: registerLoading } = useRegister()
+  const user = useUser()
+  const logout = useLogout()
 
   if (loading || registerLoading) return <p>Loading</p>
 
   return (
     <div>
+      {user ? (
+        <p>
+          Connected as {user?.username} <button onClick={logout}>Logout</button>
+        </p>
+      ) : (
+        <p>Not Connected</p>
+      )}
       <Create />
       <br />
       <button
@@ -118,7 +139,7 @@ const Main = () => {
       </button>
       <button
         onClick={() =>
-          login('alex', '124')
+          login('user', '123456')
             .then((r: any) => console.log('r:', r))
             .catch((e: any) => console.log('e:', e))
         }
