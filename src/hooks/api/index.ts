@@ -8,13 +8,7 @@ import to from 'await-to-js'
 import produce from 'immer'
 import pathToResource from './pathToResource'
 
-type HookRunFunction<T> = ({
-  id,
-  body
-}: {
-  id?: string
-  body?: object
-}) => Promise<T>
+type HookRunFunction<T> = (params: { id?: string; body?: object }) => Promise<T>
 
 const apiHook = (verb: 'POST' | 'PUT' | 'DELETE' | 'GET') => <T>(
   path: string
@@ -42,26 +36,12 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE' | 'GET') => <T>(
         )
       })
     )
-    // setCache((prev: Cache) =>
-    //   produce(prev, (draft) => {
-    //     Object.keys(draft.value[resource]).forEach((sorting) => {
-    //       draft.value[resource][sorting].data = draft.value[resource][
-    //         sorting
-    //       ].data.filter((id) => id !== data.id)
-    //     })
-    //     // draft.value[resource].data = draft.value[resource].data.filter(
-    //     //   (i) => i._id !== data._id
-    //     // )
-    //   })
-    // )
   }
 
   function updateCacheAfterPost(data: any) {
-    console.log('UPDATE AFTER POST')
-
     setCache((prev: Cache) =>
       produce(prev, (draft) => {
-        draft.value[resource].data.push(data)
+        draft.value[resource].data.push({ ...data, _sortings: [] })
       })
     )
   }
@@ -111,6 +91,7 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE' | 'GET') => <T>(
         setRequestState({ loading: false, data, err: null })
         return data
       } else {
+        setRequestState({ loading: false, data: null, err: data.message })
         throw new Error(data.message)
       }
     }
