@@ -1,95 +1,15 @@
 import React from 'react'
-
+import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import {
   VoyagerProvider,
-  useGet,
   usePost,
   useLogin,
   useRegister,
-  useDetlete,
   useUser,
   useLogout
 } from 'voyager'
-
-interface Restaurant {
-  name: string
-  _id: string
-  avg_rating?: number
-  num_reviews?: number
-}
-
-// interface RestaurantsGetResult {
-//   data: Restaurant[]
-//   meta: {
-//     hasNext: boolean
-//     total: number
-//   }
-// }
-
-interface RestaurantListProps {
-  data: Restaurant[]
-}
-
-const RestaurantsListLoading = () => {
-  return <p> 'Loading'</p>
-}
-
-const RestaurantListItem = ({ r }: { r: Restaurant }) => {
-  const [del, { loading: loadingDel }] = useDetlete('restaurants')
-  return (
-    <li>
-      {r.name}{' '}
-      {loadingDel ? (
-        'Deleting'
-      ) : (
-        <button
-          onClick={() => del({ id: r._id }).catch((e) => alert(e.message))}
-        >
-          Delete
-        </button>
-      )}
-    </li>
-  )
-}
-
-const RestaurantList = ({ data }: RestaurantListProps) => {
-  return (
-    <ul>
-      {data.map((r) => (
-        <RestaurantListItem key={r._id} r={r} />
-      ))}
-    </ul>
-  )
-}
-
-const RestaurantsListWrapper = () => {
-  const [{ data, meta, called, loading, err }] = useGet<Restaurant[]>(
-    'restaurants'
-  )
-
-  const a = 1
-
-  React.useEffect(() => {
-    console.log('hi')
-  }, [a])
-
-  console.log(data, err)
-
-  if (!called) return null
-
-  if (loading) return <RestaurantsListLoading />
-  if (err) return <p>{JSON.stringify(err)}</p>
-
-  return (
-    <div>
-      <div>
-        Lista
-        <RestaurantList data={data!} />
-        {data!.length}/{meta!.total}
-      </div>
-    </div>
-  )
-}
+import Home from './Home'
+import SingleRestaurant from './SingleRestaurant'
 
 const Create = () => {
   const [createRestaurant, { loading }] = usePost('restaurants')
@@ -146,8 +66,25 @@ const Main = () => {
       >
         Login
       </button>
-      <RestaurantsListWrapper />
     </div>
+  )
+}
+
+const MyRouter: React.FC<{}> = () => {
+  return (
+    <Router>
+      <Switch>
+        <Route path='/restaurant/:id'>
+          <SingleRestaurant />
+        </Route>
+        <Route path='/main'>
+          <Main />
+        </Route>
+        <Route path='/'>
+          <Home />
+        </Route>
+      </Switch>
+    </Router>
   )
 }
 
@@ -158,7 +95,7 @@ const App = () => {
       auth='http://localhost:3001/auth'
       useCache={false}
     >
-      <Main />
+      <MyRouter />
     </VoyagerProvider>
   )
 }

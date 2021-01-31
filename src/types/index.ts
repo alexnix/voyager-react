@@ -1,4 +1,4 @@
-interface Meta {
+export interface Meta {
   total: number
   hasNext: boolean
   // hasPrev: boolean
@@ -40,6 +40,8 @@ export interface RequestOptions {
   query: Partial<QueryParameters>
   lazy: boolean
   policy: 'cache-first' | 'cache-and-network' | 'network-first' | 'no-cache'
+  strictSoring: boolean
+  spawnFromCache: boolean
   alias?: string
 }
 
@@ -77,6 +79,7 @@ export interface Cache {
       requests: {
         [key: string]: {
           queryParams: QueryParameters
+          meta: Meta
         }
       }
     }
