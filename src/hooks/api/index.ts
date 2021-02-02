@@ -12,7 +12,7 @@ type HookRunFunction<T> = (params: { id?: string; body?: object }) => Promise<T>
 
 const apiHook = (verb: 'POST' | 'PUT' | 'DELETE' | 'GET') => <T>(
   path: string
-): [HookRunFunction<T>, RequestState] => {
+): [RequestState, HookRunFunction<T>] => {
   const resource = pathToResource(path)
 
   const { url } = useContext(VoyagerContext)
@@ -97,7 +97,7 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE' | 'GET') => <T>(
     }
   }
 
-  return [run, requestState]
+  return [requestState, run]
 }
 
 const usePost = apiHook('POST')
