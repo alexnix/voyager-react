@@ -13,7 +13,8 @@ const defaultRequestOptions: RequestOptions = {
   lazy: false,
   policy: 'cache-first',
   strictSoring: false,
-  spawnFromCache: false
+  spawnFromCache: false,
+  skipUntil: true
 }
 
 const initRequestState = (lazy: boolean) => ({

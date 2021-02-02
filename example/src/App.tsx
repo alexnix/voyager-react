@@ -2,31 +2,25 @@ import React from 'react'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import {
   VoyagerProvider,
-  usePost,
+  // usePost,
   useLogin,
   useRegister,
   useUser,
   useLogout
 } from 'voyager'
+import PrivateRoute from './PrivateRoute'
+import MainLayout from './layouts/main'
 import Home from './Home'
 import SingleRestaurant from './SingleRestaurant'
+import Login from './Login'
+import Account from './Account'
 
 const Create = () => {
-  const [createRestaurant, { loading }] = usePost('restaurants')
+  // const [createRestaurant, { loading }] = usePost('restaurants')
 
-  if (loading) return <p>Creating</p>
+  // if (loading) return <p>Creating</p>
 
-  return (
-    <button
-      onClick={() => {
-        createRestaurant({
-          body: { name: 'La Fam' + Math.random() * 1000, image: 'http' }
-        }).catch((err) => alert(err.message))
-      }}
-    >
-      Create
-    </button>
-  )
+  return <p>hi</p>
 }
 
 const Main = () => {
@@ -71,6 +65,8 @@ const Main = () => {
 }
 
 const MyRouter: React.FC<{}> = () => {
+  const user = useUser()
+
   return (
     <Router>
       <Switch>
@@ -80,8 +76,18 @@ const MyRouter: React.FC<{}> = () => {
         <Route path='/main'>
           <Main />
         </Route>
+        <Route path='/login'>
+          <Login />
+        </Route>
+        <PrivateRoute path='/account' authenticated={user}>
+          <MainLayout>
+            <Account />
+          </MainLayout>
+        </PrivateRoute>
         <Route path='/'>
-          <Home />
+          <MainLayout>
+            <Home />
+          </MainLayout>
         </Route>
       </Switch>
     </Router>

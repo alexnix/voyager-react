@@ -42,6 +42,7 @@ export interface RequestOptions {
   policy: 'cache-first' | 'cache-and-network' | 'network-first' | 'no-cache'
   strictSoring: boolean
   spawnFromCache: boolean
+  skipUntil: boolean
   alias?: string
 }
 
@@ -51,11 +52,13 @@ export type Full<T> = {
 
 export interface LoginHook {
   loading: boolean
+  error: string | null
   login: (username: string, password: string) => Promise<AuthData>
 }
 
 export interface RegisterHook {
   loading: boolean
+  error: string | null
   register: (username: string, password: string) => Promise<AuthData>
 }
 
