@@ -14,6 +14,7 @@ import Home from './Home'
 import SingleRestaurant from './SingleRestaurant'
 import Login from './Login'
 import Account from './Account'
+import ModalProvider from './modal'
 
 const Create = () => {
   // const [createRestaurant, { loading }] = usePost('restaurants')
@@ -101,7 +102,16 @@ const App = () => {
       auth='http://localhost:3001/auth'
       useCache={false}
     >
-      <MyRouter />
+      <ModalProvider
+        styles={{
+          red: {
+            content: { backgroundColor: 'red' },
+            overlay: {}
+          }
+        }}
+      >
+        <MyRouter />
+      </ModalProvider>
     </VoyagerProvider>
   )
 }

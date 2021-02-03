@@ -36,6 +36,7 @@ const SingleRestaurant = () => {
   console.log(topReviews)
 
   // console.log(restaurantLoading, restaurant)
+  // heheh
 
   if (restaurantLoading) {
     return <p>Loading</p>

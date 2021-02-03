@@ -7,8 +7,6 @@ interface Props {
 }
 
 const RestaurantComp: React.FC<Props> = ({ restaurant, onDelete }) => {
-  console.log(restaurant)
-
   return (
     <div>
       {restaurant.name}
