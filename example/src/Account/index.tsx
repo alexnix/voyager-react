@@ -14,25 +14,19 @@ const Account: React.FC<AccountProps> = () => {
     }
   })
 
-  const [{ loading: reviewsLoading, data: reviewsData }] = useGet('reviews', {
-    skipUntil: data,
-    query: {
-      filter: {
-        restaurant: ['in', data?.map((r: any) => r._id)],
-        reply_of_owner: ['eq', null]
-      }
-    }
-  })
+  // const [{ loading: reviewsLoading, data: reviewsData }] = useGet('reviews', {
+  //   skipUntil: data,
+  //   query: {
+  //     filter: {
+  //       restaurant: ['in', data?.map((r: any) => r._id)],
+  //       reply_of_owner: ['eq', null]
+  //     }
+  //   }
+  // })
 
   const [, createRestaurant] = usePost('restaurants')
 
-  // useEffect(() => {
-  //   if (data) {
-  //     getReviews()
-  //   }
-  // }, [data])
-
-  console.log('reviewsLoading, reviewsData: ', reviewsLoading, reviewsData)
+  // console.log('reviewsLoading, reviewsData: ', reviewsLoading, reviewsData)
 
   if (loading) return <p>Loading</p>
 
@@ -43,7 +37,7 @@ const Account: React.FC<AccountProps> = () => {
       </button>
       <div>
         {data.map((r: any) => (
-          <div>{r.name}</div>
+          <div key={r._id}>{r.name}</div>
         ))}
       </div>
     </div>
