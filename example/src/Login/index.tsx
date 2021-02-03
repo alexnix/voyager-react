@@ -6,7 +6,7 @@ import { useHistory } from 'react-router-dom'
 interface LoginProps {}
 
 const Login: React.FC<LoginProps> = () => {
-  const { login, error } = useLogin()
+  const [{ err }, login] = useLogin()
   const user = useUser()
   const history = useHistory()
 
@@ -16,7 +16,7 @@ const Login: React.FC<LoginProps> = () => {
 
   return (
     <LoginForm
-      error={error}
+      error={err}
       onLogin={({ username, password }) => {
         login(username, password)
       }}

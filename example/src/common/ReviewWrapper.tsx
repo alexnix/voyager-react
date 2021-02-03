@@ -7,7 +7,7 @@ interface Props {
 }
 
 const ReviewWrapper: React.FC<Props> = ({ data }) => {
-  const [deleteReview] = useDetlete('reviews')
+  const [, deleteReview] = useDetlete('reviews')
 
   return (
     <Review

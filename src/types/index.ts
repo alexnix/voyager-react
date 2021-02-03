@@ -108,3 +108,11 @@ export interface Cache {
 //     }
 //   }
 // }
+
+export interface AuthFunctionParams {
+  username: string
+  password: string
+  extra?: { [key: string]: any }
+}
+
+export type AuthFunction = (params: AuthFunctionParams) => Promise<void>
