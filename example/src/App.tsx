@@ -24,8 +24,8 @@ const Create = () => {
 }
 
 const Main = () => {
-  const { login, loading } = useLogin()
-  const { register, loading: registerLoading } = useRegister()
+  const [{ loading }, login] = useLogin()
+  const [{ loading: registerLoading }, register] = useRegister()
   const user = useUser()
   const logout = useLogout()
 

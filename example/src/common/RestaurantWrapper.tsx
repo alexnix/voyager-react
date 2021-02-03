@@ -9,7 +9,7 @@ interface Props {
 }
 
 const RestaurantWrapper: React.FC<Props> = ({ data }) => {
-  const [deleteRestaurant] = useDetlete('restaurants')
+  const [, deleteRestaurant] = useDetlete('restaurants')
 
   return (
     <Link to={`/restaurant/${data._id}`}>

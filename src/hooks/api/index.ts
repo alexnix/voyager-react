@@ -83,7 +83,6 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE' | 'GET') => <T>(
 
     if (err) {
       setRequestState({ loading: false, data: null, err: err.message })
-      throw err
     } else {
       const data = await res?.json()
       if (res?.status === 200) {
@@ -92,7 +91,6 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE' | 'GET') => <T>(
         return data
       } else {
         setRequestState({ loading: false, data: null, err: data.message })
-        throw new Error(data.message)
       }
     }
   }

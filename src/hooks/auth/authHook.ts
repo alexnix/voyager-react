@@ -2,23 +2,24 @@ import { useContext, useState } from 'react'
 import VoyagerContext from '../../VoyagerContext'
 import useAuthData from '../localStorage/useAuthData'
 import { to } from 'await-to-js'
-import { RequestState } from '../../types'
+import { RequestState, AuthFunction } from '../../types'
 
-function authHook<T>(hookType: 'login' | 'register') {
-  return (): [RequestState, () => void] => {
+function authHook(hookType: 'login' | 'register') {
+  return (): [RequestState, AuthFunction] => {
     const { auth } = useContext(VoyagerContext)
 
-    const [loading, setLoading] = useState<boolean>(false)
-    const [error, setError] = useState<string | null>(null)
+    const [requestState, setRequestState] = useState<RequestState>({
+      loading: false,
+      called: false,
+      data: null,
+      err: null,
+      meta: null
+    })
 
     const [, setAuthData] = useAuthData()
 
-    const run = async (
-      username: string,
-      password: string,
-      extra?: { [key: string]: any }
-    ): Promise<any> => {
-      setLoading(true)
+    const run: AuthFunction = async ({ username, password, extra }) => {
+      setRequestState((prev) => ({ ...prev, loading: true }))
       const [err, res] = await to(
         fetch(`${auth}/${hookType}`, {
           method: 'POST',
@@ -29,22 +30,34 @@ function authHook<T>(hookType: 'login' | 'register') {
         })
       )
       if (err) {
-        setLoading(false)
-        setError(err.message)
+        setRequestState((prev) => ({
+          ...prev,
+          loading: false,
+          err: err.message,
+          called: true
+        }))
       } else {
         const data = await res?.json()
         if (res?.status === 200) {
-          setLoading(false)
+          setRequestState((prev) => ({
+            ...prev,
+            loading: false,
+            err: null,
+            called: true
+          }))
           setAuthData(data)
-          return data
         } else {
-          setLoading(false)
-          setError(data.message)
+          setRequestState((prev) => ({
+            ...prev,
+            loading: false,
+            err: data.message,
+            called: true
+          }))
         }
       }
     }
 
-    return ({ loading, error, [hookType]: run } as unknown) as T
+    return [requestState, run]
   }
 }
 
