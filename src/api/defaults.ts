@@ -1,4 +1,4 @@
-import { QueryParameters, RequestOptions } from './../../types'
+import { QueryParameters, RequestOptions } from '../types'
 
 const defaultQuery: QueryParameters = {
   select: [],

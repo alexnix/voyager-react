@@ -70,7 +70,6 @@ export interface AuthData {
 export interface VoyagerProviderProps {
   url: string
   auth?: string
-  useCache: boolean
   children: React.ReactNode
 }
 
@@ -83,31 +82,12 @@ export interface Cache {
         [key: string]: {
           queryParams: QueryParameters
           meta: Meta
+          alias?: string
         }
       }
     }
   }
 }
-
-// export interface Cache {
-//   setCache?: any
-//   value: {
-//     // resource
-//     [key: string]: {
-//       // sorting
-//       [key: string]: {
-//         data: any[]
-//         requests: {
-//           //actual request
-//           [key: string]: {
-//             queryParams?: QueryParameters
-//             response: VoyagerGetResult<any>
-//           }
-//         }
-//       }
-//     }
-//   }
-// }
 
 export interface AuthFunctionParams {
   username: string
@@ -116,3 +96,11 @@ export interface AuthFunctionParams {
 }
 
 export type AuthFunction = (params: AuthFunctionParams) => Promise<void>
+
+export interface GetFunctionParams {
+  silent?: boolean
+  policy?: 'cache-first' | 'cache-and-network' | 'network-first' | 'no-cache'
+}
+
+export type GetFunction<T> = (params?: GetFunctionParams) => Promise<T>
+

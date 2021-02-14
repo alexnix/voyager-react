@@ -1,5 +1,5 @@
 import useAuthData from '../localStorage/useAuthData'
-import { AuthData } from '../../types'
+import { AuthData } from '../types'
 
 function useUser() {
   const [authData] = useAuthData<AuthData>()
