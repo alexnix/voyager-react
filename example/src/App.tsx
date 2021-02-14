@@ -45,7 +45,7 @@ const Main = () => {
       <br />
       <button
         onClick={() =>
-          register('john', 'doe')
+          register({ username: 'john', password: 'doe' })
             .then((r: any) => console.log('r:', r))
             .catch((e: any) => console.log('e:', e))
         }
@@ -54,7 +54,7 @@ const Main = () => {
       </button>
       <button
         onClick={() =>
-          login('user', '123456')
+          login({ username: 'john', password: 'doe' })
             .then((r: any) => console.log('r:', r))
             .catch((e: any) => console.log('e:', e))
         }
@@ -100,13 +100,23 @@ const App = () => {
     <VoyagerProvider
       url='http://localhost:3001/api/v1'
       auth='http://localhost:3001/auth'
-      useCache={false}
     >
       <ModalProvider
         styles={{
-          red: {
-            content: { backgroundColor: 'red' },
-            overlay: {}
+          my: {
+            content: {
+              width: '300px',
+              height: 'max-content',
+              position: 'unset',
+              border: 'none',
+              borderRadius: '0px'
+            },
+            overlay: {
+              background: 'rgba(0,0,0,0.4)',
+              display: 'flex',
+              alignItems: 'center',
+              justifyContent: 'center'
+            }
           }
         }}
       >

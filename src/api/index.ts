@@ -1,19 +1,19 @@
 import useGet from './useGet'
-import { RequestState, AuthData, Cache } from '../../types'
+import { RequestState, AuthData, Cache } from '../types'
 import { useContext, useState } from 'react'
-import VoyagerContext from '../../VoyagerContext'
-import VoyagerCache from '../../VoyagerCache'
+import VoyagerContext from '../VoyagerContext'
+import VoyagerCache from '../VoyagerCache'
 import useAuthData from '../localStorage/useAuthData'
 import to from 'await-to-js'
 import produce from 'immer'
-import pathToResource from './pathToResource'
+import doNetwork from './doNetowrk'
 
 type HookRunFunction<T> = (params: { id?: string; body?: object }) => Promise<T>
 
-const apiHook = (verb: 'POST' | 'PUT' | 'DELETE' | 'GET') => <T>(
+const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
   path: string
 ): [RequestState, HookRunFunction<T>] => {
-  const resource = pathToResource(path)
+  const [resource] = path.split('/')
 
   const { url } = useContext(VoyagerContext)
   const { setCache } = useContext(VoyagerCache)
@@ -27,8 +27,6 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE' | 'GET') => <T>(
   })
 
   function updateCacheAfterDelete(data: any) {
-    console.log(data)
-
     setCache((prev: Cache) =>
       produce(prev, (draft) => {
         draft.value[resource].data = draft.value[resource].data.filter(
@@ -71,28 +69,52 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE' | 'GET') => <T>(
     if (id) endpoint += `/${id}`
 
     const [err, res] = await to(
-      fetch(endpoint, {
-        method: verb,
-        body: JSON.stringify(body),
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${authData?.token}`
-        }
-      })
+      doNetwork(verb, endpoint, authData?.token, body)
     )
-
     if (err) {
-      setRequestState({ loading: false, data: null, err: err.message })
+      setRequestState({
+        loading: false,
+        called: true,
+        data: null,
+        err: err.message,
+        meta: null
+      })
+      return null
     } else {
-      const data = await res?.json()
-      if (res?.status === 200) {
-        updateCache[verb](data)
-        setRequestState({ loading: false, data, err: null })
-        return data
-      } else {
-        setRequestState({ loading: false, data: null, err: data.message })
-      }
+      updateCache[verb](res)
+      setRequestState({
+        loading: false,
+        called: true,
+        data: res,
+        err: null,
+        meta: null
+      })
+      return res
     }
+
+    // const [err, res] = await to(
+    //   fetch(endpoint, {
+    //     method: verb,
+    //     body: JSON.stringify(body),
+    //     headers: {
+    //       'Content-Type': 'application/json',
+    //       Authorization: `Bearer ${authData?.token}`
+    //     }
+    //   })
+    // )
+    //
+    // if (err) {
+    //   setRequestState({ loading: false, data: null, err: err.message })
+    // } else {
+    //   const data = await res?.json()
+    //   if (res?.status === 200) {
+    //     updateCache[verb](data)
+    //     setRequestState({ loading: false, data, err: null })
+    //     return data
+    //   } else {
+    //     setRequestState({ loading: false, data: null, err: data.message })
+    //   }
+    // }
   }
 
   return [requestState, run]
@@ -101,6 +123,5 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE' | 'GET') => <T>(
 const usePost = apiHook('POST')
 const usePut = apiHook('PUT')
 const useDetlete = apiHook('DELETE')
-const useLazyGet = apiHook('GET')
 
-export { usePost, usePut, useDetlete, useLazyGet, useGet }
+export { usePost, usePut, useDetlete, useGet }

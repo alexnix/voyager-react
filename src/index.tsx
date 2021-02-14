@@ -3,20 +3,16 @@ import * as React from 'react'
 import VoyagerContext from './VoyagerContext'
 import VoyagerCache from './VoyagerCache'
 
-import { useGet, usePost, usePut, useDetlete, useLazyGet } from './hooks/api'
-import { useLogin, useRegister, useUser, useLogout } from './hooks/auth'
+import { useGet, usePost, usePut, useDetlete } from './api'
+import usePagination from './api/usePagination'
+import { useLogin, useRegister, useUser, useLogout } from './auth'
 
 import { VoyagerProviderProps } from './types'
 
-const VoyagerProvider = ({
-  url,
-  auth,
-  useCache,
-  children
-}: VoyagerProviderProps) => {
+const VoyagerProvider = ({ url, auth, children }: VoyagerProviderProps) => {
   const [cache, setCache] = React.useState({ value: {} })
   return (
-    <VoyagerContext.Provider value={{ url, auth, useCache }}>
+    <VoyagerContext.Provider value={{ url, auth }}>
       <VoyagerCache.Provider value={{ ...cache, setCache }}>
         {children}
       </VoyagerCache.Provider>
@@ -30,9 +26,9 @@ export {
   usePost,
   usePut,
   useDetlete,
-  useLazyGet,
   useLogin,
   useRegister,
   useUser,
-  useLogout
+  useLogout,
+  usePagination
 }

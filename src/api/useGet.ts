@@ -1,7 +1,7 @@
 import { useState, useContext, useEffect } from 'react'
 import produce from 'immer'
 import to from 'await-to-js'
-import VoyagerContext from './../../VoyagerContext'
+import VoyagerContext from './../VoyagerContext'
 import useAuthData from './../localStorage/useAuthData'
 import {
   RequestOptions,
@@ -9,22 +9,17 @@ import {
   AuthData,
   QueryParameters,
   Cache,
-  Meta
-} from './../../types'
+  GetFunction
+} from './../types'
 import {
   defaultQuery,
   defaultRequestOptions,
   initRequestState
 } from './defaults'
-import VoyagerCache from '../../VoyagerCache'
+import VoyagerCache from '../VoyagerCache'
 import runRequestAgainstCache from './runRequestAgainstCache'
 import buildEndpoint from './buildEndpoint'
-// import pathToResource from './pathToResource'
-
-interface GetFunctionParams {
-  silent?: boolean
-}
-type GetFunction<T> = (params?: GetFunctionParams) => Promise<T>
+import doNetwork from './doNetowrk'
 
 function useGet<T = any>(
   path: string,
@@ -40,6 +35,7 @@ function useGet<T = any>(
   const [getState, setGetState] = useState<RequestState<T>>(
     initRequestState(options.lazy!)
   )
+  const [started, setStarted] = useState(false)
 
   const [resource, id] = path.split('/')
   const endpoint = !id
@@ -92,14 +88,10 @@ function useGet<T = any>(
   const doGet: GetFunction<T> = async function ({ silent } = {}) {
     if (!silent) setGetState((prev) => ({ ...prev, loading: true }))
 
-    const [err, res] = await to(
-      fetch(endpoint, {
-        method: 'GET',
-        headers: {
-          Authorization: `Bearer ${authData?.token}`
-        }
-      })
-    )
+    setStarted(true)
+    const [err, res] = await to(doNetwork('GET', endpoint, authData?.token))
+    setStarted(false)
+
     if (err) {
       setGetState({
         loading: false,
@@ -108,29 +100,17 @@ function useGet<T = any>(
         meta: null,
         err: err.message
       })
+      return null
     } else {
-      const data = await res?.json()
-      if (res?.status === 200) {
-        const hookData = id ? data : data.data
-        const hookMeta = id ? undefined : data.meta
-        setGetState({
-          loading: false,
-          called: true,
-          data: hookData,
-          meta: hookMeta,
-          err: null
-        })
-        addToChace(data)
-        return data.data
-      } else {
-        setGetState({
-          loading: false,
-          called: true,
-          data: null,
-          meta: null,
-          err: data.message
-        })
-      }
+      setGetState({
+        loading: false,
+        called: true,
+        data: res.data,
+        meta: res.meta,
+        err: null
+      })
+      addToChace(res)
+      return res
     }
   }
 
@@ -139,12 +119,16 @@ function useGet<T = any>(
   // netowrk-fist: do netowrk without checking cache, and cache the result
   // no-cahce: do netowrk and don`t cache result
 
-  const doCachedGet: GetFunction<T> = async (params) => {
+  const doCachedGet: GetFunction<T> = async (
+    params = { silent: false, policy: options.policy }
+  ) => {
+    params = { silent: false, policy: options.policy, ...params }
+
+    const { policy } = params
     let cacheMiss = true
-    if (
-      options.policy === 'cache-first' ||
-      options.policy === 'cache-and-network'
-    ) {
+    let ret: T | null = null
+
+    if (policy === 'cache-first' || policy === 'cache-and-network') {
       const [valid, data] = runRequestAgainstCache(
         resource,
         endpoint,
@@ -160,7 +144,7 @@ function useGet<T = any>(
           data,
           meta: cache[resource]?.requests[endpoint].meta
         })
-        return data
+        ret = data
       } else if (options.spawnFromCache && id) {
         const hookData = cache[resource]?.data.find((i: any) => i._id === id)
         if (hookData) {
@@ -175,19 +159,24 @@ function useGet<T = any>(
       }
     }
 
+    console.log('policy: ', policy)
+
     if (
-      (options.policy === 'cache-first' && cacheMiss) ||
-      options.policy === 'cache-and-network' ||
-      options.policy === 'network-first' ||
-      options.policy === 'no-cache'
+      (policy === 'cache-first' && cacheMiss) ||
+      policy === 'cache-and-network' ||
+      policy === 'network-first' ||
+      policy === 'no-cache'
     ) {
-      doGet(params)
+      return doGet(params)
+    } else {
+      return ret as T
     }
   }
 
   useEffect(() => {
-    if (!options.lazy && options.skipUntil) {
-      doCachedGet({ silent: false })
+    console.log('!!!', options, started)
+    if (!options.lazy && options.skipUntil && !started) {
+      doCachedGet({ silent: false, policy: options.policy })
     }
   }, [JSON.stringify(options.query), authData, options.skipUntil])
 
@@ -203,12 +192,11 @@ function useGet<T = any>(
         }
         setGetState((prev) => ({
           ...prev,
-          data,
-          meta: { ...prev.meta, total: data.length } as Meta
+          data
         }))
       }
     }
-  }, [cache])
+  }, [cache[resource]])
 
   return [getState, doCachedGet]
 }

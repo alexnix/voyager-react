@@ -1,4 +1,4 @@
-import { FilterObj, QueryParameters } from './../../types'
+import { FilterObj, QueryParameters } from '../types'
 
 const filterFunctions = {
   eq: (lhs: any, rhs: any) => lhs === rhs,
@@ -37,25 +37,28 @@ function runRequestAgainstCache(
   options: QueryParameters
 ): [boolean, any] {
   if (cache[resource]?.requests[endpoint]) {
-    try {
-      const data = cache[resource].data
-        .filter((i: any) => itemMatchedFilters(i, options.filter!))
-        .sort((a: any, b: any) => {
-          const prop = options.sort_by[0]
-          const order = options.sort_by[1]
-          if (order === 'asc') {
-            return a[prop] > b[prop]
-          } else {
-            return a[prop] < b[prop]
-          }
-        })
-
-      return [true, data]
-    } catch (e) {
-      console.log(e)
-
-      return [false, undefined]
-    }
+    const prop = options.sort_by[0]
+    const order = options.sort_by[1]
+    const data = cache[resource].data
+      .filter((i: any) => itemMatchedFilters(i, options.filter!))
+      .sort((a: any, b: any) => {
+        if (order === 'asc') {
+          return a[prop] > b[prop] ? 1 : -1
+        } else {
+          return a[prop] < b[prop] ? 1 : -1
+        }
+      })
+      .slice(
+        options.page_no * options.page_size,
+        (options.page_no + 1) * options.page_size
+      )
+    // if (
+    //   cache[resource].requests[endpoint].meta.hasNext === true &&
+    //   data.length < options.page_size
+    // ) {
+    //   return [false, data]
+    // }
+    return [true, data]
   } else {
     return [false, undefined]
   }

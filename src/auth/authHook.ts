@@ -1,8 +1,9 @@
 import { useContext, useState } from 'react'
-import VoyagerContext from '../../VoyagerContext'
+import VoyagerContext from '../VoyagerContext'
 import useAuthData from '../localStorage/useAuthData'
 import { to } from 'await-to-js'
-import { RequestState, AuthFunction } from '../../types'
+import { RequestState, AuthFunction } from '../types'
+import doNetwork from '../api/doNetowrk'
 
 function authHook(hookType: 'login' | 'register') {
   return (): [RequestState, AuthFunction] => {
@@ -21,39 +22,31 @@ function authHook(hookType: 'login' | 'register') {
     const run: AuthFunction = async ({ username, password, extra }) => {
       setRequestState((prev) => ({ ...prev, loading: true }))
       const [err, res] = await to(
-        fetch(`${auth}/${hookType}`, {
-          method: 'POST',
-          headers: {
-            'Content-Type': 'application/json'
-          },
-          body: JSON.stringify({ username, password, extra })
+        doNetwork('POST', `${auth}/${hookType}`, undefined, {
+          username,
+          password,
+          extra
         })
       )
       if (err) {
-        setRequestState((prev) => ({
-          ...prev,
+        setRequestState({
           loading: false,
+          called: true,
+          data: null,
           err: err.message,
-          called: true
-        }))
+          meta: null
+        })
+        return null
       } else {
-        const data = await res?.json()
-        if (res?.status === 200) {
-          setRequestState((prev) => ({
-            ...prev,
-            loading: false,
-            err: null,
-            called: true
-          }))
-          setAuthData(data)
-        } else {
-          setRequestState((prev) => ({
-            ...prev,
-            loading: false,
-            err: data.message,
-            called: true
-          }))
-        }
+        setRequestState({
+          loading: false,
+          called: true,
+          data: res,
+          err: null,
+          meta: null
+        })
+        setAuthData(res)
+        return res
       }
     }
 

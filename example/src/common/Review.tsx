@@ -11,6 +11,7 @@ const Review: React.FC<Props> = ({ review }) => {
       {review.comment}
       <div>
         <button>Delete</button>
+        <button>Edit</button>
       </div>
     </div>
   )
