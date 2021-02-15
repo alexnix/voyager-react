@@ -6,18 +6,20 @@ import RestaurantWrapper from '../common/RestaurantWrapper'
 const Home = () => {
   const [minRating, setMinRating] = useState<number>(0)
 
-  const [{ loading, data, meta }, , nextPage, prevPage] = usePagination(
-    'restaurants',
-    {
-      policy: 'network-first',
-      query: {
-        filter: {
-          avg_rating: ['gte', minRating]
-        },
-        page_size: 2
-      }
+  const [
+    { loading, data, meta },
+    ,
+    nextPage,
+    prevPage,
+    setCurrentPage
+  ] = usePagination('restaurants', {
+    query: {
+      filter: {
+        avg_rating: ['gte', minRating]
+      },
+      page_size: 2
     }
-  )
+  })
 
   // console.log('data: ', data)
 
@@ -30,7 +32,10 @@ const Home = () => {
       <input
         type='number'
         value={minRating}
-        onChange={(e) => setMinRating(Number(e.target.value))}
+        onChange={(e) => {
+          setMinRating(Number(e.target.value))
+          setCurrentPage(0)
+        }}
       />
       <List elements={data} ElementItem={RestaurantWrapper} />
       <div>Totala of {meta.total} restaurants.</div>

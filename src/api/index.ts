@@ -7,6 +7,7 @@ import useAuthData from '../localStorage/useAuthData'
 import to from 'await-to-js'
 import produce from 'immer'
 import doNetwork from './doNetowrk'
+import { itemMatchedFilters } from './runRequestAgainstCache'
 
 type HookRunFunction<T> = (params: { id?: string; body?: object }) => Promise<T>
 
@@ -32,6 +33,17 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
         draft.value[resource].data = draft.value[resource].data.filter(
           (i: any) => i._id !== data._id
         )
+        Object.values(draft.value[resource].requests).forEach((r) => {
+          if (itemMatchedFilters(data, r.queryParams.filter)) {
+            r.meta.total -= 1
+            if (
+              r.queryParams.page_size * (r.queryParams.page_no + 1) >=
+              r.meta.total
+            ) {
+              r.meta.hasNext = false
+            }
+          }
+        })
       })
     )
   }
@@ -40,6 +52,17 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
     setCache((prev: Cache) =>
       produce(prev, (draft) => {
         draft.value[resource].data.push({ ...data, _sortings: [] })
+        Object.values(draft.value[resource].requests).forEach((r) => {
+          if (itemMatchedFilters(data, r.queryParams.filter)) {
+            r.meta.total += 1
+            if (
+              r.queryParams.page_size * (r.queryParams.page_no + 1) <
+              r.meta.total
+            ) {
+              r.meta.hasNext = true
+            }
+          }
+        })
       })
     )
   }
