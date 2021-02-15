@@ -52,12 +52,12 @@ function runRequestAgainstCache(
         options.page_no * options.page_size,
         (options.page_no + 1) * options.page_size
       )
-    // if (
-    //   cache[resource].requests[endpoint].meta.hasNext === true &&
-    //   data.length < options.page_size
-    // ) {
-    //   return [false, data]
-    // }
+    if (
+      cache[resource].requests[endpoint].meta?.hasNext === true &&
+      data.length < options.page_size
+    ) {
+      return [false, undefined]
+    }
     return [true, data]
   } else {
     return [false, undefined]
@@ -65,3 +65,4 @@ function runRequestAgainstCache(
 }
 
 export default runRequestAgainstCache
+export { itemMatchedFilters }

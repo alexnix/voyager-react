@@ -11,6 +11,7 @@ const RestaurantComp: React.FC<Props> = ({ restaurant, onDelete }) => {
   return (
     <div>
       <Link to={`/restaurant/${restaurant._id}`}>{restaurant.name}</Link>
+      {' - '}
       {restaurant.num_reviews} reviews
       <div>
         <button onClick={onDelete}>Delete</button>

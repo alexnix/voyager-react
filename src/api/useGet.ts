@@ -56,13 +56,15 @@ function useGet<T = any>(
         }
         if (id) {
           const dup: any = draft.value[resource].data.find(
-            (j: any) => j._id === data._id
+            (j: any) => j._id === data.data._id
           )
           if (dup) {
-            // TODO
+            for (const [k, v] of Object.entries(data.data)) {
+              dup[k] = v
+            }
           } else {
-            data._sortings = []
-            draft.value[resource].data.push(data)
+            data.data._sortings = []
+            draft.value[resource].data.push(data.data)
           }
         } else {
           data.data.forEach((i: any) => {
@@ -174,7 +176,6 @@ function useGet<T = any>(
   }
 
   useEffect(() => {
-    console.log('!!!', options, started)
     if (!options.lazy && options.skipUntil && !started) {
       doCachedGet({ silent: false, policy: options.policy })
     }
@@ -192,7 +193,8 @@ function useGet<T = any>(
         }
         setGetState((prev) => ({
           ...prev,
-          data
+          data,
+          meta: cache[resource]?.requests[endpoint].meta
         }))
       }
     }

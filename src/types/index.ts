@@ -1,7 +1,7 @@
 export interface Meta {
   total: number
   hasNext: boolean
-  // hasPrev: boolean
+  hasPrev: boolean
 }
 
 export interface RequestState<T = any> {
