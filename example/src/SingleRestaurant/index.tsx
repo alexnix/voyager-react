@@ -43,8 +43,6 @@ const SingleRestaurant = () => {
     return <p>Loading</p>
   }
 
-  console.log('restaurant: ', restaurant)
-
   return (
     <div>
       <h1>{restaurant.name}</h1>

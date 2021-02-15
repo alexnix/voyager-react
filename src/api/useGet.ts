@@ -44,6 +44,7 @@ function useGet<T = any>(
 
   const sorting = `${options.query?.sort_by![0]}:${options.query?.sort_by![1]}`
 
+  // TODO: is this really needed?
   if (options.strictSoring) {
     options.query!.filter!._sortings = ['in', [sorting]]
   }
@@ -55,6 +56,9 @@ function useGet<T = any>(
           draft.value[resource] = { data: [], requests: {} }
         }
         if (id) {
+          // TODO maybe remote the .data .meta stuff
+          // only return data and create a /count endpoint to get the total
+          // then infer hasNext and havePrev
           const dup: any = draft.value[resource].data.find(
             (j: any) => j._id === data.data._id
           )
@@ -161,8 +165,6 @@ function useGet<T = any>(
       }
     }
 
-    console.log('policy: ', policy)
-
     if (
       (policy === 'cache-first' && cacheMiss) ||
       policy === 'cache-and-network' ||
@@ -191,6 +193,7 @@ function useGet<T = any>(
         if (id) {
           data = data[0]
         }
+        // TODO check if the data is actually different before setting it again
         setGetState((prev) => ({
           ...prev,
           data,
