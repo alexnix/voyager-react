@@ -1,10 +1,10 @@
 {
-  "name": "voyager",
+  "name": "voyager-react",
   "version": "1.0.0",
   "description": "Easily consume a REST API.",
   "author": "Alexandru Niculae (alexnix)",
   "license": "MIT",
-  "repository": "alexnix/voyager",
+  "repository": "alexnix/voyager-react",
   "main": "dist/index.js",
   "module": "dist/index.modern.js",
   "source": "src/index.tsx",

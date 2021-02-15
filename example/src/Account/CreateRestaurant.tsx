@@ -1,5 +1,5 @@
 import React from 'react'
-import { usePost } from 'voyager'
+import { usePost } from 'voyager-react'
 import RestaurantForm from './RestaurantForm'
 import { useClose } from '../modal'
 

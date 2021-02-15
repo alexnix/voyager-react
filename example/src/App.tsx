@@ -7,7 +7,7 @@ import {
   useRegister,
   useUser,
   useLogout
-} from 'voyager'
+} from 'voyager-react'
 import PrivateRoute from './PrivateRoute'
 import MainLayout from './layouts/main'
 import Home from './Home'

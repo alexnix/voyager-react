@@ -1,5 +1,5 @@
 import React from 'react'
-import { useGet } from 'voyager'
+import { useGet } from 'voyager-react'
 import { useParams } from 'react-router-dom'
 import ReviewWrapper from './../common/ReviewWrapper'
 import List from './../common/List'
@@ -54,7 +54,7 @@ const SingleRestaurant = () => {
       >
         get top
       </button>
-      {topReviews.length === 1 && <ReviewWrapper data={topReviews[0]} />}
+      {topReviews.length !== 0 && <ReviewWrapper data={topReviews[0]} />}
       <h2>Latest Reviews</h2>
       {reviews && <List elements={reviews} ElementItem={ReviewWrapper} />}
     </div>

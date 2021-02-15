@@ -1,5 +1,5 @@
 {
-  "name": "voyager-example",
+  "name": "voyager-react-example",
   "homepage": ".",
   "version": "0.0.0",
   "private": true,
@@ -26,7 +26,7 @@
     "react-router-dom": "^5.2.0",
     "react-scripts": "link:../node_modules/react-scripts",
     "typescript": "link:../node_modules/typescript",
-    "voyager": "link:.."
+    "voyager-react": "link:.."
   },
   "devDependencies": {
     "@babel/plugin-syntax-object-rest-spread": "^7.8.3"

@@ -1,5 +1,5 @@
 import React, { useState } from 'react'
-import { usePagination } from 'voyager'
+import { usePagination } from 'voyager-react'
 import List from '../common/List'
 import RestaurantWrapper from '../common/RestaurantWrapper'
 
@@ -38,9 +38,9 @@ const Home = () => {
         }}
       />
       <List elements={data} ElementItem={RestaurantWrapper} />
-      <div>Totala of {meta.total} restaurants.</div>
-      {meta.hasPrev && <button onClick={prevPage}>Prev</button>}{' '}
-      {meta.hasNext && <button onClick={nextPage}>Next</button>}{' '}
+      <div>Totala of {meta?.total} restaurants.</div>
+      {meta?.hasPrev && <button onClick={prevPage}>Prev</button>}{' '}
+      {meta?.hasNext && <button onClick={nextPage}>Next</button>}{' '}
     </div>
   )
 }

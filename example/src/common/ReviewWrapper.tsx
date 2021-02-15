@@ -1,5 +1,5 @@
 import React from 'react'
-import { useDetlete } from 'voyager'
+import { useDetlete } from 'voyager-react'
 import Review from './Review'
 
 interface Props {

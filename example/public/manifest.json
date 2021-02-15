@@ -1,6 +1,6 @@
 {
-  "short_name": "voyager",
-  "name": "voyager",
+  "short_name": "voyager-react",
+  "name": "voyager-react",
   "icons": [
     {
       "src": "favicon.ico",

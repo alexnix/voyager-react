@@ -1,12 +1,12 @@
 import useGet from './useGet'
 import { useState, useEffect } from 'react'
-import { RequestOptions } from '../types'
+import { RequestOptions, GetFunction, RequestState } from '../types'
 import { defaultRequestOptions, defaultQuery } from './defaults'
 
-const usePagination = (
+const usePagination = <T = any>(
   path: string,
   reqOptions: Partial<RequestOptions> = defaultRequestOptions
-) => {
+): [RequestState<T>, GetFunction<T>, any, any, any, any] => {
   reqOptions = { ...defaultRequestOptions, ...reqOptions }
   reqOptions.query = { ...defaultQuery, ...reqOptions.query }
 
@@ -22,14 +22,14 @@ const usePagination = (
     }
   })
 
-  const bareGet = useGet(path, getOptions())
+  const bareGet = useGet<T>(path, getOptions())
 
-  useGet(path, {
+  useGet<T>(path, {
     ...getOptions(-1),
     skipUntil: page > 0
   })
 
-  useGet(path, {
+  useGet<T>(path, {
     ...getOptions(1),
     skipUntil: bareGet[0].loading == false && bareGet[0].meta?.hasNext === true
   })

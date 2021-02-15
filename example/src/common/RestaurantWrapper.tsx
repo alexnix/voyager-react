@@ -1,5 +1,5 @@
 import React from 'react'
-import { useDetlete } from 'voyager'
+import { useDetlete } from 'voyager-react'
 import RestaurantComp from './Restaurant'
 import { Restaurant } from './types'
 
