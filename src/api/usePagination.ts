@@ -1,14 +1,14 @@
 import useGet from './useGet'
-import { useState, useEffect } from 'react'
-import { RequestOptions, GetFunction, RequestState } from '../types'
-import { defaultRequestOptions, defaultQuery } from './defaults'
+import {useState, useEffect} from 'react'
+import {RequestOptions, GetFunction, RequestState} from '../types'
+import {defaultRequestOptions, defaultQuery} from './defaults'
 
 const usePagination = <T = any>(
   path: string,
   reqOptions: Partial<RequestOptions> = defaultRequestOptions
 ): [RequestState<T>, GetFunction<T>, any, any, any, any, any] => {
-  reqOptions = { ...defaultRequestOptions, ...reqOptions }
-  reqOptions.query = { ...defaultQuery, ...reqOptions.query }
+  reqOptions = {...defaultRequestOptions, ...reqOptions}
+  reqOptions.query = {...defaultQuery, ...reqOptions.query}
 
   const [page, setCurrentPage] = useState(reqOptions.query!.page_no!)
   const [pageSize, setPageSize] = useState(reqOptions.query!.page_size!)
@@ -34,8 +34,6 @@ const usePagination = <T = any>(
     // TODO make this skip actually work, current issue is that immediately after the page changes the useGet hook is still returing data for the previus page, causing this hook (usePagination) to pre-fetch next page
     skipUntil: bareGet[0].loading == false && bareGet[0].meta?.hasNext === true
   })
-
-  console.log('page, bareGet[0]: ', page, bareGet[0])
 
   useEffect(() => {
     setCurrentPage(reqOptions.query!.page_no!)

@@ -1,4 +1,4 @@
-import { FilterObj, QueryParameters } from '../types'
+import {FilterObj, QueryParameters, Meta} from '../types'
 
 const filterFunctions = {
   eq: (lhs: any, rhs: any) => lhs === rhs,
@@ -34,35 +34,50 @@ function runRequestAgainstCache(
   resource: string,
   endpoint: string,
   cache: any,
-  options: QueryParameters
-): [boolean, any] {
-  if (cache[resource]?.requests[endpoint]) {
-    const prop = options.sort_by[0]
-    const order = options.sort_by[1]
-    const data = cache[resource].data
-      .filter((i: any) => itemMatchedFilters(i, options.filter!))
-      .sort((a: any, b: any) => {
-        if (order === 'asc') {
-          return a[prop] > b[prop] ? 1 : -1
-        } else {
-          return a[prop] < b[prop] ? 1 : -1
-        }
-      })
-      .slice(
-        options.page_no * options.page_size,
-        (options.page_no + 1) * options.page_size
-      )
-    if (
-      cache[resource].requests[endpoint].meta?.hasNext === true &&
-      data.length < options.page_size
-    ) {
+  options: QueryParameters,
+  id: string,
+  spawnFromCache: boolean
+): [boolean, any, Meta?] {
+  if (id) {
+    if (cache[resource]?.requests[endpoint] || spawnFromCache) {
+      const res = cache[resource]?.data.find((i: any) => i._id === id)
+      if (res) {
+        return [true, res]
+      } else {
+        return [false, undefined]
+      }
+    } else {
       return [false, undefined]
     }
-    return [true, data]
   } else {
-    return [false, undefined]
+    if (cache[resource]?.requests[endpoint]) {
+      const prop = options.sort_by[0]
+      const order = options.sort_by[1]
+      const data = cache[resource].data
+        .filter((i: any) => itemMatchedFilters(i, options.filter!))
+        .sort((a: any, b: any) => {
+          if (order === 'asc') {
+            return a[prop] > b[prop] ? 1 : -1
+          } else {
+            return a[prop] < b[prop] ? 1 : -1
+          }
+        })
+        .slice(
+          options.page_no * options.page_size,
+          (options.page_no + 1) * options.page_size
+        )
+      if (
+        cache[resource].requests[endpoint].meta?.hasNext === true &&
+        data.length < options.page_size
+      ) {
+        return [false, undefined]
+      }
+      return [true, data, cache[resource]?.requests[endpoint].meta]
+    } else {
+      return [false, undefined]
+    }
   }
 }
 
 export default runRequestAgainstCache
-export { itemMatchedFilters }
+export {itemMatchedFilters}

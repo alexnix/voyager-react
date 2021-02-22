@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react'
+import {useState, useContext, useEffect} from 'react'
 import produce from 'immer'
 import to from 'await-to-js'
 import VoyagerContext from './../VoyagerContext'
@@ -25,12 +25,12 @@ function useGet<T = any>(
   path: string,
   options: Partial<RequestOptions> = defaultRequestOptions
 ): [RequestState<T>, GetFunction<T>] {
-  options = { ...defaultRequestOptions, ...options }
-  options.query = { ...defaultQuery, ...options.query } as QueryParameters
+  options = {...defaultRequestOptions, ...options}
+  options.query = {...defaultQuery, ...options.query} as QueryParameters
 
   const [authData] = useAuthData<AuthData>()
-  const { url } = useContext(VoyagerContext)
-  const { value: cache, setCache } = useContext(VoyagerCache)
+  const {url} = useContext(VoyagerContext)
+  const {value: cache, setCache} = useContext(VoyagerCache)
 
   const [getState, setGetState] = useState<RequestState<T>>(
     initRequestState(options.lazy!)
@@ -44,7 +44,7 @@ function useGet<T = any>(
 
   const sorting = `${options.query?.sort_by![0]}:${options.query?.sort_by![1]}`
 
-  // TODO: is this really needed?
+  // TODO: is this really needed as a functionality?
   if (options.strictSoring) {
     options.query!.filter!._sortings = ['in', [sorting]]
   }
@@ -53,7 +53,7 @@ function useGet<T = any>(
     setCache((prev: Cache) =>
       produce(prev, (draft) => {
         if (draft.value[resource] === undefined) {
-          draft.value[resource] = { data: [], requests: {} }
+          draft.value[resource] = {data: [], requests: {}}
         }
         if (id) {
           // TODO maybe remote the .data .meta stuff
@@ -91,8 +91,8 @@ function useGet<T = any>(
     )
   }
 
-  const doGet: GetFunction<T> = async function ({ silent } = {}) {
-    if (!silent) setGetState((prev) => ({ ...prev, loading: true }))
+  const doGet: GetFunction<T> = async function ({silent} = {}) {
+    if (!silent) setGetState((prev) => ({...prev, loading: true}))
 
     setStarted(true)
     const [err, res] = await to(doNetwork('GET', endpoint, authData?.token))
@@ -115,6 +115,7 @@ function useGet<T = any>(
         meta: res.meta,
         err: null
       })
+      console.log("endpoint, res.data: ", endpoint, res.data)
       addToChace(res)
       return res
     }
@@ -126,20 +127,22 @@ function useGet<T = any>(
   // no-cahce: do netowrk and don`t cache result
 
   const doCachedGet: GetFunction<T> = async (
-    params = { silent: false, policy: options.policy }
+    params = {silent: false, policy: options.policy}
   ) => {
-    params = { silent: false, policy: options.policy, ...params }
+    params = {silent: false, policy: options.policy, ...params}
 
-    const { policy } = params
+    const {policy} = params
     let cacheMiss = true
     let ret: T | null = null
 
     if (policy === 'cache-first' || policy === 'cache-and-network') {
-      const [valid, data] = runRequestAgainstCache(
+      const [valid, data, meta] = runRequestAgainstCache(
         resource,
         endpoint,
         cache,
-        options.query as QueryParameters
+        options.query as QueryParameters,
+        id,
+        options.spawnFromCache!
       )
       if (valid) {
         cacheMiss = false
@@ -148,21 +151,22 @@ function useGet<T = any>(
           called: true,
           loading: false,
           data,
-          meta: cache[resource]?.requests[endpoint].meta
+          meta
         })
         ret = data
-      } else if (options.spawnFromCache && id) {
-        const hookData = cache[resource]?.data.find((i: any) => i._id === id)
-        if (hookData) {
-          cacheMiss = false
-          setGetState({
-            err: null,
-            called: true,
-            loading: false,
-            data: (hookData as unknown) as T
-          })
-        }
       }
+      // else if (options.spawnFromCache && id) {
+      //   const hookData = cache[resource]?.data.find((i: any) => i._id === id)
+      //   if (hookData) {
+      //     cacheMiss = false
+      //     setGetState({
+      //       err: null,
+      //       called: true,
+      //       loading: false,
+      //       data: (hookData as unknown) as T
+      //     })
+      //   }
+      // }
     }
 
     if (
@@ -179,25 +183,24 @@ function useGet<T = any>(
 
   useEffect(() => {
     if (!options.lazy && options.skipUntil && !started) {
-      doCachedGet({ silent: false, policy: options.policy })
+      doCachedGet({silent: false, policy: options.policy})
     }
   }, [JSON.stringify(options.query), authData, options.skipUntil])
 
   useEffect(() => {
     if (options.policy !== 'no-cache') {
-      let [valid, data] = runRequestAgainstCache(resource, endpoint, cache, {
-        ...defaultQuery,
-        ...options.query
-      })
+      let [valid, data, meta] = runRequestAgainstCache(resource, endpoint, cache, options.query as QueryParameters, id, options.spawnFromCache!)
       if (valid) {
-        if (id) {
-          data = data[0]
-        }
+        // if (id) {
+        //   console.log("resource, endpoint: ", resource, endpoint)
+        //   console.log("data: ", data)
+        //   data = data[0]
+        // }
         // TODO check if the data is actually different before setting it again
         setGetState((prev) => ({
           ...prev,
           data,
-          meta: cache[resource]?.requests[endpoint].meta
+          meta
         }))
       }
     }
