@@ -48,11 +48,14 @@ const usePagination = <T = any>(
 
   return [
     ...bareGet,
-    getNextPage,
-    getPreviousPage,
-    currentPage,
-    setCurrentPage,
-    setPageSize
+    {
+      getNextPage,
+      getPreviousPage,
+      currentPage,
+      pageSize,
+      setCurrentPage,
+      setPageSize
+    }
   ]
 }
 

@@ -104,12 +104,17 @@ export interface GetFunctionParams {
 
 export type GetFunction<T> = (params?: GetFunctionParams) => Promise<T>
 
+interface PaginationData {
+  getNextPage: () => void
+  getPreviousPage: () => void
+  currentPage: number
+  pageSize: number
+  setCurrentPage: (page: number) => void
+  setPageSize: (size: number) => void
+}
+
 export type PaginatedGet<T = any> = [
   RequestState<T>,
   GetFunction<T>,
-  () => void,
-  () => void,
-  number,
-  (page: number) => void,
-  (size: number) => void
+  PaginationData
 ]
