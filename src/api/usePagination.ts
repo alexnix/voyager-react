@@ -1,14 +1,14 @@
 import useGet from './useGet'
-import {useState, useEffect} from 'react'
-import {RequestOptions, GetFunction, RequestState} from '../types'
-import {defaultRequestOptions, defaultQuery} from './defaults'
+import { useState, useEffect } from 'react'
+import { RequestOptions, PaginatedGet } from '../types'
+import { defaultRequestOptions, defaultQuery } from './defaults'
 
 const usePagination = <T = any>(
   path: string,
   reqOptions: Partial<RequestOptions> = defaultRequestOptions
-): [RequestState<T>, GetFunction<T>, () => void, () => void, number, (page: number) => void, (size: number) => void] => {
-  reqOptions = {...defaultRequestOptions, ...reqOptions}
-  reqOptions.query = {...defaultQuery, ...reqOptions.query}
+): PaginatedGet<T> => {
+  reqOptions = { ...defaultRequestOptions, ...reqOptions }
+  reqOptions.query = { ...defaultQuery, ...reqOptions.query }
 
   const [currentPage, setCurrentPage] = useState(reqOptions.query!.page_no!)
   const [pageSize, setPageSize] = useState(reqOptions.query!.page_size!)

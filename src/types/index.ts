@@ -104,3 +104,12 @@ export interface GetFunctionParams {
 
 export type GetFunction<T> = (params?: GetFunctionParams) => Promise<T>
 
+export type PaginatedGet<T = any> = [
+  RequestState<T>,
+  GetFunction<T>,
+  () => void,
+  () => void,
+  number,
+  (page: number) => void,
+  (size: number) => void
+]
