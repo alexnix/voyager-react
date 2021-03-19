@@ -83,23 +83,24 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
       POST: updateCacheAfterPost,
       PUT: updateCacheAfterPut,
       DELETE: updateCacheAfterDelete
-    }[verb]
+    }
 
     if (data._voyager_api) {
-      const updates = Object.entries(data.result).filter(
-        ([k]) => k !== '_voyager_api'
-      )
-      for (const [resource, value] of updates) {
-        if (value instanceof Array) {
-          for (const item of value as any[]) {
-            update(resource, item)
+      ;['post', 'put', 'delete'].forEach((verb) => {
+        if (data.verb) {
+          for (const [resource, value] of data.verb) {
+            if (value instanceof Array) {
+              for (const item of value as any[]) {
+                update[verb](resource, item)
+              }
+            } else {
+              update[verb](resource, value)
+            }
           }
-        } else {
-          update(resource, value)
         }
-      }
+      })
     } else {
-      update(gResource, data)
+      update[verb](gResource, data)
     }
   }
 
