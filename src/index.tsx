@@ -20,6 +20,11 @@ const VoyagerProvider = ({ url, auth, children }: VoyagerProviderProps) => {
   )
 }
 
+const useCache = () => {
+  const { value, setCache } = React.useContext(VoyagerCache)
+  return [value, setCache]
+}
+
 export {
   VoyagerProvider,
   useGet,
@@ -30,5 +35,6 @@ export {
   useRegister,
   useUser,
   useLogout,
-  usePagination
+  usePagination,
+  useCache
 }
