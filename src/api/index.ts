@@ -80,9 +80,9 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
 
   const updateCache = (data: any, verb: string) => {
     const update = {
-      POST: updateCacheAfterPost,
-      PUT: updateCacheAfterPut,
-      DELETE: updateCacheAfterDelete
+      post: updateCacheAfterPost,
+      put: updateCacheAfterPut,
+      delete: updateCacheAfterDelete
     }
 
     if (data._voyager_api) {
