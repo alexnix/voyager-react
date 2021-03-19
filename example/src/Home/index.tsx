@@ -9,9 +9,7 @@ const Home = () => {
   const [
     { loading, data, meta },
     ,
-    nextPage,
-    prevPage,
-    setCurrentPage
+    { getPreviousPage, getNextPage, setCurrentPage }
   ] = usePagination('restaurants', {
     query: {
       filter: {
@@ -39,8 +37,8 @@ const Home = () => {
       />
       <List elements={data} ElementItem={RestaurantWrapper} />
       <div>Totala of {meta?.total} restaurants.</div>
-      {meta?.hasPrev && <button onClick={prevPage}>Prev</button>}{' '}
-      {meta?.hasNext && <button onClick={nextPage}>Next</button>}{' '}
+      {meta?.hasPrev && <button onClick={getPreviousPage}>Prev</button>}{' '}
+      {meta?.hasNext && <button onClick={getNextPage}>Next</button>}{' '}
     </div>
   )
 }

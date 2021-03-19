@@ -14,7 +14,7 @@ type HookRunFunction<T> = (params: { id?: string; body?: object }) => Promise<T>
 const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
   path: string
 ): [RequestState, HookRunFunction<T>] => {
-  const [resource] = path.split('/')
+  const [gResource] = path.split('/')
 
   const { url } = useContext(VoyagerContext)
   const { setCache } = useContext(VoyagerCache)
@@ -27,7 +27,7 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
     err: null
   })
 
-  function updateCacheAfterDelete(data: any) {
+  function updateCacheAfterDelete(resource: string, data: any) {
     setCache((prev: Cache) =>
       produce(prev, (draft) => {
         draft.value[resource].data = draft.value[resource].data.filter(
@@ -48,7 +48,7 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
     )
   }
 
-  function updateCacheAfterPost(data: any) {
+  function updateCacheAfterPost(resource: string, data: any) {
     setCache((prev: Cache) =>
       produce(prev, (draft) => {
         draft.value[resource].data.push({ ...data, _sortings: [] })
@@ -67,7 +67,7 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
     )
   }
 
-  function updateCacheAfterPut(data: any) {
+  function updateCacheAfterPut(resource: string, data: any) {
     setCache((prev: Cache) =>
       produce(prev, (draft) => {
         draft.value[resource].data = [
@@ -78,17 +78,36 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
     )
   }
 
-  const updateCache = {
-    POST: updateCacheAfterPost,
-    PUT: updateCacheAfterPut,
-    DELETE: updateCacheAfterDelete
+  const updateCache = (data: any, verb: string) => {
+    const update = {
+      POST: updateCacheAfterPost,
+      PUT: updateCacheAfterPut,
+      DELETE: updateCacheAfterDelete
+    }[verb]
+
+    if (data._voyager_api) {
+      const updates = Object.entries(data.result).filter(
+        ([k]) => k !== '_voyager_api'
+      )
+      for (const [resource, value] of updates) {
+        if (value instanceof Array) {
+          for (const item of value as any[]) {
+            update(resource, item)
+          }
+        } else {
+          update(resource, value)
+        }
+      }
+    } else {
+      update(gResource, data)
+    }
   }
 
   const run: HookRunFunction<T> = async ({ id, body }) => {
     setRequestState({ loading: true, data: null, err: null })
     let endpoint: string
 
-    endpoint = `${url}/${resource}`
+    endpoint = `${url}/${gResource}`
     if (id) endpoint += `/${id}`
 
     const [err, res] = await to(
@@ -104,7 +123,7 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
       })
       return null
     } else {
-      updateCache[verb](res)
+      updateCache(res, verb)
       setRequestState({
         loading: false,
         called: true,
