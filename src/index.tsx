@@ -7,7 +7,7 @@ import { useGet, usePost, usePut, useDetlete } from './api'
 import usePagination from './api/usePagination'
 import { useLogin, useRegister, useUser, useLogout } from './auth'
 
-import { VoyagerProviderProps } from './types'
+import { VoyagerProviderProps, CacheValue } from './types'
 
 const VoyagerProvider = ({ url, auth, children }: VoyagerProviderProps) => {
   const [cache, setCache] = React.useState({ value: {} })
@@ -22,7 +22,12 @@ const VoyagerProvider = ({ url, auth, children }: VoyagerProviderProps) => {
 
 const useCache = () => {
   const { value, setCache } = React.useContext(VoyagerCache)
-  return [value, setCache]
+
+  const userSetCache = (mutation: CacheValue) => {
+    setCache((prev: Cache) => ({ ...prev, value: mutation }))
+  }
+
+  return [value, userSetCache]
 }
 
 export {

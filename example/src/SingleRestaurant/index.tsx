@@ -1,8 +1,10 @@
 import React from 'react'
-import {useGet} from 'voyager-react'
-import {useParams} from 'react-router-dom'
+import { useGet } from 'voyager-react'
+import { useParams } from 'react-router-dom'
 import ReviewWrapper from './../common/ReviewWrapper'
 import List from './../common/List'
+import LeaveReview from './LeaveReview'
+import UpdateCache from './UpdateCache'
 
 function useTopReview(id: string) {
   return useGet('reviews', {
@@ -17,16 +19,16 @@ function useTopReview(id: string) {
 }
 
 const SingleRestaurant = () => {
-  const {id} = useParams()
+  const { id } = useParams()
 
-  const [{data: restaurant, loading: restaurantLoading}] = useGet(
+  const [{ data: restaurant, loading: restaurantLoading }] = useGet(
     `restaurants/${id}`,
     {
       // spawnFromCache: true
     }
   )
 
-  const [{data: reviews}] = useGet(`reviews`, {
+  const [{ data: reviews }] = useGet(`reviews`, {
     query: {
       filter: {
         restaurant: ['eq', id]
@@ -35,7 +37,7 @@ const SingleRestaurant = () => {
   })
 
   const [
-    {data: topReviews, loading: topReviewsLoading},
+    { data: topReviews, loading: topReviewsLoading },
     getTopReview
   ] = useTopReview(id)
 
@@ -46,9 +48,11 @@ const SingleRestaurant = () => {
   return (
     <div>
       <h1>{restaurant.name}</h1>
+      <UpdateCache restaurantId={restaurant._id} />
+      <LeaveReview restaurantId={restaurant._id} />
       <h2>Best review</h2>
       <button
-        onClick={() => getTopReview({policy: 'no-cache', silent: true})}
+        onClick={() => getTopReview({ policy: 'no-cache', silent: true })}
       >
         get top
       </button>

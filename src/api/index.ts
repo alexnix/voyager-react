@@ -87,8 +87,8 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
 
     if (data._voyager_api) {
       ;['post', 'put', 'delete'].forEach((verb) => {
-        if (data.verb) {
-          for (const [resource, value] of data.verb) {
+        if (data[verb]) {
+          for (const [resource, value] of Object.entries(data[verb])) {
             if (value instanceof Array) {
               for (const item of value as any[]) {
                 update[verb](resource, item)
@@ -100,7 +100,7 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
         }
       })
     } else {
-      update[verb](gResource, data)
+      update[verb.toLowerCase()](gResource, data)
     }
   }
 

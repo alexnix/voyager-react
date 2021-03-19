@@ -73,20 +73,22 @@ export interface VoyagerProviderProps {
   children: React.ReactNode
 }
 
-export interface Cache {
-  setCache?: any
-  value: {
-    [key: string]: {
-      data: Array<object>
-      requests: {
-        [key: string]: {
-          queryParams: QueryParameters
-          meta: Meta
-          alias?: string
-        }
+export interface CacheValue {
+  [key: string]: {
+    data: Array<object>
+    requests: {
+      [key: string]: {
+        queryParams: QueryParameters
+        meta: Meta
+        alias?: string
       }
     }
   }
+}
+
+export interface Cache {
+  setCache?: any
+  value: CacheValue
 }
 
 export interface AuthFunctionParams {
