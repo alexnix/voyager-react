@@ -1,6 +1,6 @@
 {
   "name": "voyager-react",
-  "version": "1.1.0",
+  "version": "1.1.1",
   "description": "Easily consume a REST API.",
   "author": "Alexandru Niculae (alexnix)",
   "license": "MIT",
