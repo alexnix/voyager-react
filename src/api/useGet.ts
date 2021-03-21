@@ -42,16 +42,12 @@ function useGet<T = any>(
     ? buildEndpoint(url, resource, options.query as QueryParameters)
     : `${url}/${path}`
 
-  const sorting = `${options.query?.sort_by![0]}:${options.query?.sort_by![1]}`
-
-  // TODO: is this really needed as a functionality?
-  if (options.strictSoring) {
-    options.query!.filter!._sortings = ['in', [sorting]]
-  }
-
   const notifyObservers = (data: any, resource: string) => {
     cacheObservers?.forEach((o) => o('get', data, resource))
   }
+
+  const findById = (arr: any[], id: string, id_field: string = '_id') =>
+    arr.find((i) => i[id_field] === id)
 
   function addToChace(data: any) {
     setCache!((prev) =>
@@ -64,34 +60,21 @@ function useGet<T = any>(
           draft[resource] = resourceCache
         }
         if (id) {
-          // TODO maybe remote the .data .meta stuff
-          // only return data and create a /count endpoint to get the total
-          // then infer hasNext and havePrev
-          const dup: any = draft[resource].data.find(
-            (j: any) => j._id === data.data._id
-          )
+          const dup = findById(draft[resource].data, data.data._id)
           if (dup) {
             for (const [k, v] of Object.entries(data.data)) {
               dup[k] = v
             }
           } else {
-            data.data._sortings = []
             draft[resource].data.push(data.data)
             notifyObservers([data.data], resource)
           }
         } else {
-          notifyObservers(data.data, resource)
-          data.data.forEach((i: any) => {
-            i._sortings = [sorting]
-            const dup: any = draft[resource].data.find(
-              (j: any) => j._id === i._id
-            )
-            if (!dup) {
-              draft[resource].data.push(i)
-            } else if (dup && !dup._sortings.includes(sorting)) {
-              dup._sortings.push(sorting)
-            }
-          })
+          const newItems = data.data.filter(
+            (i: any) => findById(draft[resource].data, i._id) === undefined
+          )
+          draft[resource].data.push(...newItems)
+          notifyObservers(newItems, resource)
         }
         draft[resource].requests[endpoint] = {
           queryParams: options.query as QueryParameters,
