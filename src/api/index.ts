@@ -1,5 +1,5 @@
 import useGet from './useGet'
-import { RequestState, AuthData, Cache } from '../types'
+import { RequestState, AuthData } from '../types'
 import { useContext, useState } from 'react'
 import VoyagerContext from '../VoyagerContext'
 import VoyagerCache from '../VoyagerCache'
@@ -16,7 +16,7 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
 ): [RequestState, HookRunFunction<T>] => {
   const [gResource] = path.split('/')
 
-  const { url } = useContext(VoyagerContext)
+  const { url, cacheObservers } = useContext(VoyagerContext)
   const { setCache } = useContext(VoyagerCache)
   const [authData] = useAuthData<AuthData>()
 
@@ -28,12 +28,12 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
   })
 
   function updateCacheAfterDelete(resource: string, data: any) {
-    setCache((prev: Cache) =>
+    setCache!((prev) =>
       produce(prev, (draft) => {
-        draft.value[resource].data = draft.value[resource].data.filter(
+        draft[resource].data = draft[resource].data.filter(
           (i: any) => i._id !== data._id
         )
-        Object.values(draft.value[resource].requests).forEach((r) => {
+        Object.values(draft[resource].requests).forEach((r: any) => {
           if (itemMatchedFilters(data, r.queryParams.filter)) {
             r.meta.total -= 1
             if (
@@ -49,10 +49,10 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
   }
 
   function updateCacheAfterPost(resource: string, data: any) {
-    setCache((prev: Cache) =>
+    setCache!((prev) =>
       produce(prev, (draft) => {
-        draft.value[resource].data.push({ ...data, _sortings: [] })
-        Object.values(draft.value[resource].requests).forEach((r) => {
+        draft[resource].data.push({ ...data, _sortings: [] })
+        Object.values(draft[resource].requests).forEach((r: any) => {
           if (itemMatchedFilters(data, r.queryParams.filter)) {
             r.meta.total += 1
             if (
@@ -68,10 +68,10 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
   }
 
   function updateCacheAfterPut(resource: string, data: any) {
-    setCache((prev: Cache) =>
+    setCache!((prev) =>
       produce(prev, (draft) => {
-        draft.value[resource].data = [
-          ...draft.value[resource].data.filter((i: any) => i._id !== data._id),
+        draft[resource].data = [
+          ...draft[resource].data.filter((i: any) => i._id !== data._id),
           data
         ]
       })
@@ -85,6 +85,12 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
       delete: updateCacheAfterDelete
     }
 
+    const notifyObservers = (verb: string, data: any, resource: string) => {
+      cacheObservers?.forEach((o) =>
+        o(verb as 'post' | 'put' | 'delete', data, resource)
+      )
+    }
+
     if (data._voyager_api) {
       ;['post', 'put', 'delete'].forEach((verb) => {
         if (data[verb]) {
@@ -92,15 +98,18 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
             if (value instanceof Array) {
               for (const item of value as any[]) {
                 update[verb](resource, item)
+                notifyObservers(verb, item, resource)
               }
             } else {
               update[verb](resource, value)
+              notifyObservers(verb, value, resource)
             }
           }
         }
       })
     } else {
       update[verb.toLowerCase()](gResource, data)
+      notifyObservers(verb.toLowerCase(), data, gResource)
     }
   }
 

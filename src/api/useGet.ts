@@ -8,8 +8,8 @@ import {
   RequestState,
   AuthData,
   QueryParameters,
-  Cache,
-  GetFunction
+  GetFunction,
+  ResourceCache
 } from './../types'
 import {
   defaultQuery,
@@ -29,8 +29,8 @@ function useGet<T = any>(
   options.query = { ...defaultQuery, ...options.query } as QueryParameters
 
   const [authData] = useAuthData<AuthData>()
-  const { url } = useContext(VoyagerContext)
-  const { value: cache, setCache } = useContext(VoyagerCache)
+  const { url, cacheObservers } = useContext(VoyagerContext)
+  const { cache, setCache } = useContext(VoyagerCache)
 
   const [getState, setGetState] = useState<RequestState<T>>(
     initRequestState(options.lazy!)
@@ -49,17 +49,25 @@ function useGet<T = any>(
     options.query!.filter!._sortings = ['in', [sorting]]
   }
 
+  const notifyObservers = (data: any, resource: string) => {
+    cacheObservers?.forEach((o) => o('get', data, resource))
+  }
+
   function addToChace(data: any) {
-    setCache((prev: Cache) =>
+    setCache!((prev) =>
       produce(prev, (draft) => {
-        if (draft.value[resource] === undefined) {
-          draft.value[resource] = { data: [], requests: {} }
+        if (draft[resource] === undefined) {
+          const resourceCache: ResourceCache<T> = {
+            data: [],
+            requests: {}
+          }
+          draft[resource] = resourceCache
         }
         if (id) {
           // TODO maybe remote the .data .meta stuff
           // only return data and create a /count endpoint to get the total
           // then infer hasNext and havePrev
-          const dup: any = draft.value[resource].data.find(
+          const dup: any = draft[resource].data.find(
             (j: any) => j._id === data.data._id
           )
           if (dup) {
@@ -68,22 +76,24 @@ function useGet<T = any>(
             }
           } else {
             data.data._sortings = []
-            draft.value[resource].data.push(data.data)
+            draft[resource].data.push(data.data)
+            notifyObservers([data.data], resource)
           }
         } else {
+          notifyObservers(data.data, resource)
           data.data.forEach((i: any) => {
             i._sortings = [sorting]
-            const dup: any = draft.value[resource].data.find(
+            const dup: any = draft[resource].data.find(
               (j: any) => j._id === i._id
             )
             if (!dup) {
-              draft.value[resource].data.push(i)
+              draft[resource].data.push(i)
             } else if (dup && !dup._sortings.includes(sorting)) {
               dup._sortings.push(sorting)
             }
           })
         }
-        draft.value[resource].requests[endpoint] = {
+        draft[resource].requests[endpoint] = {
           queryParams: options.query as QueryParameters,
           meta: data.meta
         }

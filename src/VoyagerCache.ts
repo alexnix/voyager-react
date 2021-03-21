@@ -1,8 +1,10 @@
 import * as React from 'react'
-import { Cache } from './types'
+import { CacheContext } from './types'
 
-const defaultCache: Cache = { value: {} }
+const defaultContext: CacheContext = {
+  cache: {}
+}
 
-const VoyagerCache = React.createContext(defaultCache)
+const VoyagerCache = React.createContext(defaultContext)
 
 export default VoyagerCache

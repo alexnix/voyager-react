@@ -1,3 +1,5 @@
+import { Dispatch, SetStateAction } from 'react'
+
 export interface Meta {
   total: number
   hasNext: boolean
@@ -73,22 +75,22 @@ export interface VoyagerProviderProps {
   children: React.ReactNode
 }
 
-export interface CacheValue {
-  [key: string]: {
-    data: Array<object>
-    requests: {
-      [key: string]: {
-        queryParams: QueryParameters
-        meta: Meta
-        alias?: string
-      }
-    }
-  }
+export interface RequestCache {
+  queryParams: QueryParameters
+  meta: Meta
+  alias?: string
 }
 
-export interface Cache {
-  setCache?: any
-  value: CacheValue
+export interface ResourceCache<T = any> {
+  data: Array<T>
+  requests: Record<string, RequestCache>
+}
+
+export type CacheValue = Record<string, ResourceCache>
+
+export interface CacheContext {
+  setCache?: Dispatch<SetStateAction<CacheValue>>
+  cache: CacheValue
 }
 
 export interface AuthFunctionParams {
@@ -120,3 +122,9 @@ export type PaginatedGet<T = any> = [
   GetFunction<T>,
   PaginationData
 ]
+
+export type CacheObserver = (
+  verb: 'get' | 'post' | 'put' | 'delete',
+  data: any,
+  resource: string
+) => void
