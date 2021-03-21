@@ -1,5 +1,5 @@
-import React from 'react'
-import { useGet } from 'voyager-react'
+import React, { useCallback } from 'react'
+import { useGet, useCacheObserver } from 'voyager-react'
 import { useParams } from 'react-router-dom'
 import ReviewWrapper from './../common/ReviewWrapper'
 import List from './../common/List'
@@ -21,6 +21,8 @@ function useTopReview(id: string) {
 const SingleRestaurant = () => {
   const { id } = useParams()
 
+  useCacheObserver(useCallback((verb) => console.log('verb: ', verb), []))
+
   const [{ data: restaurant, loading: restaurantLoading }] = useGet(
     `restaurants/${id}`,
     {
@@ -40,6 +42,15 @@ const SingleRestaurant = () => {
     { data: topReviews, loading: topReviewsLoading },
     getTopReview
   ] = useTopReview(id)
+
+  const obs = useCallback(
+    (verb, data) => {
+      console.log('verb, data: ', verb, data)
+    },
+    [getTopReview]
+  )
+
+  useCacheObserver(obs)
 
   if (restaurantLoading || topReviewsLoading) {
     return <p>Loading</p>
