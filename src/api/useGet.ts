@@ -1,4 +1,4 @@
-import { useState, useContext, useEffect } from 'react'
+import { useState, useContext, useEffect, useCallback } from 'react'
 import produce from 'immer'
 import to from 'await-to-js'
 import VoyagerContext from './../VoyagerContext'
@@ -118,60 +118,49 @@ function useGet<T = any>(
   // netowrk-fist: do netowrk without checking cache, and cache the result
   // no-cahce: do netowrk and don`t cache result
 
-  const doCachedGet: GetFunction<T> = async (
-    params = { silent: false, policy: options.policy }
-  ) => {
-    params = { silent: false, policy: options.policy, ...params }
+  const doCachedGet: GetFunction<T> = useCallback(
+    async (params = { silent: false, policy: options.policy }) => {
+      params = { silent: false, policy: options.policy, ...params }
 
-    const { policy } = params
-    let cacheMiss = true
-    let ret: T | null = null
+      const { policy } = params
+      let cacheMiss = true
+      let ret: T | null = null
 
-    if (policy === 'cache-first' || policy === 'cache-and-network') {
-      const [valid, data, meta] = runRequestAgainstCache(
-        resource,
-        endpoint,
-        cache,
-        options.query as QueryParameters,
-        id,
-        options.spawnFromCache!
-      )
-      if (valid) {
-        cacheMiss = false
-        setGetState({
-          err: null,
-          called: true,
-          loading: false,
-          data,
-          meta
-        })
-        ret = data
+      if (policy === 'cache-first' || policy === 'cache-and-network') {
+        const [valid, data, meta] = runRequestAgainstCache(
+          resource,
+          endpoint,
+          cache,
+          options.query as QueryParameters,
+          id,
+          options.spawnFromCache!
+        )
+        if (valid) {
+          cacheMiss = false
+          setGetState({
+            err: null,
+            called: true,
+            loading: false,
+            data,
+            meta
+          })
+          ret = data
+        }
       }
-      // else if (options.spawnFromCache && id) {
-      //   const hookData = cache[resource]?.data.find((i: any) => i._id === id)
-      //   if (hookData) {
-      //     cacheMiss = false
-      //     setGetState({
-      //       err: null,
-      //       called: true,
-      //       loading: false,
-      //       data: (hookData as unknown) as T
-      //     })
-      //   }
-      // }
-    }
 
-    if (
-      (policy === 'cache-first' && cacheMiss) ||
-      policy === 'cache-and-network' ||
-      policy === 'network-first' ||
-      policy === 'no-cache'
-    ) {
-      return doGet(params)
-    } else {
-      return ret as T
-    }
-  }
+      if (
+        (policy === 'cache-first' && cacheMiss) ||
+        policy === 'cache-and-network' ||
+        policy === 'network-first' ||
+        policy === 'no-cache'
+      ) {
+        return doGet(params)
+      } else {
+        return ret as T
+      }
+    },
+    [cacheObservers?.length]
+  )
 
   useEffect(() => {
     if (!options.lazy && options.skipUntil && !started) {
