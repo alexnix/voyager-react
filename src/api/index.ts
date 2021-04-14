@@ -42,6 +42,7 @@ const reducer = (state: RequestState, action: Action): RequestState =>
         draft.called = true
         draft.data = null
         draft.err = action.payload
+        return draft
       }
       default:
         throw Error('Unhandled action type.')
