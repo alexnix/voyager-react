@@ -1,13 +1,14 @@
-import React from 'react'
+import React, { useLayoutEffect } from 'react'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import {
-  VoyagerProvider,
+  VoyagerProvider
   // usePost,
-  useLogin,
-  useRegister,
-  useUser,
-  useLogout
+  // useLogin,
+  // useRegister,
+  // useUser,
+  // useLogout
 } from 'voyager-react'
+import { useLogin, useRegister, useUser, useLogout } from './auth'
 import PrivateRoute from './PrivateRoute'
 import MainLayout from './layouts/main'
 import Home from './Home'
@@ -15,6 +16,8 @@ import SingleRestaurant from './SingleRestaurant'
 import Login from './Login'
 import Account from './Account'
 import ModalProvider from './modal'
+import fetchIntercept from 'fetch-intercept'
+import { useToken } from './auth'
 
 const Create = () => {
   // const [createRestaurant, { loading }] = usePost('restaurants')
@@ -29,6 +32,8 @@ const Main = () => {
   const [{ loading: registerLoading }, register] = useRegister()
   const user = useUser()
   const logout = useLogout()
+
+  console.log('user: ', user)
 
   if (loading || registerLoading) return <p>Loading</p>
 
@@ -68,6 +73,8 @@ const Main = () => {
 const MyRouter: React.FC<{}> = () => {
   const user = useUser()
 
+  console.log('user: ', user)
+
   return (
     <Router>
       <Switch>
@@ -96,6 +103,18 @@ const MyRouter: React.FC<{}> = () => {
 }
 
 const App = () => {
+  const token = useToken()
+  useLayoutEffect(
+    () =>
+      fetchIntercept.register({
+        request: (url, config) => {
+          if (token) config.headers['Authorization'] = `Bearer ${token!}`
+          return [url, config]
+        }
+      }),
+    []
+  )
+
   return (
     <VoyagerProvider
       url='http://localhost:3001/api/v1'

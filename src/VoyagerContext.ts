@@ -1,5 +1,5 @@
 import React, { Dispatch, SetStateAction } from 'react'
-import { CacheObserver } from './types'
+import type { CacheObserver } from './typings'
 
 interface VoyagerContext_t {
   url: string

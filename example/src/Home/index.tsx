@@ -7,7 +7,7 @@ const Home = () => {
   const [minRating, setMinRating] = useState<number>(0)
 
   const [
-    { loading, data, meta },
+    { loading, data, meta, err: error },
     ,
     { getPreviousPage, getNextPage, setCurrentPage }
   ] = usePagination('restaurants', {
@@ -19,9 +19,12 @@ const Home = () => {
     }
   })
 
-  // console.log('data: ', data)
+  console.log('data: ', data)
+  console.log('Home render')
 
   if (loading) return null
+
+  if (error) return <p>{error}</p>
 
   return (
     <div>

@@ -1,6 +1,6 @@
 import React from 'react'
 import LoginForm from './LoginForm'
-import { useLogin, useUser } from 'voyager-react'
+import { useLogin, useUser } from '../auth'
 import { Redirect } from 'react-router-dom'
 
 interface LoginProps {}

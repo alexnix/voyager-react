@@ -1,25 +1,65 @@
-import { useState, useContext, useEffect, useCallback } from 'react'
+import { useState, useContext, useEffect, useCallback, useReducer } from 'react'
 import produce from 'immer'
 import to from 'await-to-js'
 import VoyagerContext from './../VoyagerContext'
-import useAuthData from './../localStorage/useAuthData'
-import {
-  RequestOptions,
-  RequestState,
-  AuthData,
-  QueryParameters,
-  GetFunction,
-  ResourceCache
-} from './../types'
 import {
   defaultQuery,
   defaultRequestOptions,
   initRequestState
-} from './defaults'
+} from './../util/defaults'
 import VoyagerCache from '../VoyagerCache'
 import runRequestAgainstCache from './runRequestAgainstCache'
 import buildEndpoint from './buildEndpoint'
-import doNetwork from './doNetowrk'
+import doNetwork from './../util/doNetowrk'
+import deepEqual from './../util/deepEqual'
+import findById from './../util/findById'
+
+import type {
+  RequestOptions,
+  RequestState,
+  QueryParameters,
+  GetFunction,
+  ResourceCache
+} from './../typings'
+
+type Action =
+  | { type: 'START' }
+  | { type: 'SUCCESS1'; payload: any }
+  | { type: 'SUCCESS2'; payload: any }
+  | { type: 'SUCCESS3'; payload: any }
+  | { type: 'ERROR'; payload: string }
+
+const reducer = (state: RequestState, action: Action) =>
+  produce(state, (draft) => {
+    console.log('action ', action)
+    switch (action.type) {
+      case 'START': {
+        draft.loading = true
+        return draft
+      }
+      case 'SUCCESS1':
+      case 'SUCCESS2': {
+        draft.loading = false
+        draft.called = true
+        draft.data = action.payload.data
+        draft.meta = action.payload.meta
+        return draft
+      }
+      case 'SUCCESS3': {
+        if (action.payload.data) draft.data = action.payload.data
+        if (action.payload.meta) draft.meta = action.payload.meta
+        return draft
+      }
+      case 'ERROR': {
+        draft.loading = false
+        draft.called = true
+        draft.data = draft.meta = null
+        draft.err = action.payload
+      }
+      default:
+        throw Error('Unhandled action type.')
+    }
+  })
 
 function useGet<T = any>(
   path: string,
@@ -28,11 +68,11 @@ function useGet<T = any>(
   options = { ...defaultRequestOptions, ...options }
   options.query = { ...defaultQuery, ...options.query } as QueryParameters
 
-  const [authData] = useAuthData<AuthData>()
   const { url, cacheObservers } = useContext(VoyagerContext)
   const { cache, setCache } = useContext(VoyagerCache)
 
-  const [getState, setGetState] = useState<RequestState<T>>(
+  const [getState, dispatch] = useReducer(
+    reducer,
     initRequestState(options.lazy!)
   )
   const [started, setStarted] = useState(false)
@@ -46,8 +86,15 @@ function useGet<T = any>(
     cacheObservers?.forEach((o) => o('get', data, resource))
   }
 
-  const findById = (arr: any[], id: string, id_field: string = '_id') =>
-    arr.find((i) => i[id_field] === id)
+  const runAgainstCache = () =>
+    runRequestAgainstCache(
+      resource,
+      endpoint,
+      cache,
+      options.query as QueryParameters,
+      id,
+      options.spawnFromCache!
+    )
 
   function addToChace(data: any) {
     setCache!((prev) =>
@@ -76,6 +123,7 @@ function useGet<T = any>(
           draft[resource].data.push(...newItems)
           notifyObservers(newItems, resource)
         }
+        // Save request in cache
         draft[resource].requests[endpoint] = {
           queryParams: options.query as QueryParameters,
           meta: data.meta
@@ -85,32 +133,20 @@ function useGet<T = any>(
   }
 
   const doGet: GetFunction<T> = async function ({ silent } = {}) {
-    if (!silent) setGetState((prev) => ({ ...prev, loading: true }))
+    if (!silent) dispatch({ type: 'START' })
 
     setStarted(true)
-    const [err, res] = await to(doNetwork('GET', endpoint, authData?.token))
+    const [err, res] = await to(doNetwork('GET', endpoint))
     setStarted(false)
 
     if (err) {
-      setGetState({
-        loading: false,
-        called: true,
-        data: null,
-        meta: null,
-        err: err.message
-      })
+      dispatch({ type: 'ERROR', payload: err.message })
       return null
-    } else {
-      setGetState({
-        loading: false,
-        called: true,
-        data: res.data,
-        meta: res.meta,
-        err: null
-      })
-      addToChace(res)
-      return res
     }
+
+    dispatch({ type: 'SUCCESS1', payload: res })
+    addToChace(res)
+    return res
   }
 
   // cache-first: check in cache and if found don`t do anything else do netowrk
@@ -127,23 +163,10 @@ function useGet<T = any>(
       let ret: T | null = null
 
       if (policy === 'cache-first' || policy === 'cache-and-network') {
-        const [valid, data, meta] = runRequestAgainstCache(
-          resource,
-          endpoint,
-          cache,
-          options.query as QueryParameters,
-          id,
-          options.spawnFromCache!
-        )
+        const [valid, data, meta] = runAgainstCache()
         if (valid) {
           cacheMiss = false
-          setGetState({
-            err: null,
-            called: true,
-            loading: false,
-            data,
-            meta
-          })
+          dispatch({ type: 'SUCCESS2', payload: { data, meta } })
           ret = data
         }
       }
@@ -159,37 +182,38 @@ function useGet<T = any>(
         return ret as T
       }
     },
-    [cacheObservers?.length]
+    [
+      cacheObservers?.length,
+      cache[resource],
+      JSON.stringify(options.query),
+      options.spawnFromCache
+    ]
   )
 
   useEffect(() => {
     if (!options.lazy && options.skipUntil && !started) {
       doCachedGet({ silent: false, policy: options.policy })
     }
-  }, [JSON.stringify(options.query), authData, options.skipUntil])
+  }, [JSON.stringify(options.query), options.skipUntil])
 
   useEffect(() => {
     if (options.policy !== 'no-cache') {
-      let [valid, data, meta] = runRequestAgainstCache(
-        resource,
-        endpoint,
-        cache,
-        options.query as QueryParameters,
-        id,
-        options.spawnFromCache!
-      )
-      if (valid) {
-        // if (id) {
-        //   console.log("resource, endpoint: ", resource, endpoint)
-        //   console.log("data: ", data)
-        //   data = data[0]
-        // }
-        // TODO check if the data is actually different before setting it again
-        setGetState((prev) => ({
-          ...prev,
-          data,
-          meta
-        }))
+      let [valid, data, meta] = runAgainstCache()
+      if (!valid) {
+        return
+      }
+      const update = {}
+      let anyUpdate = false
+      if (!deepEqual((getState.data as unknown) as object, data)) {
+        update['data'] = data
+        anyUpdate = true
+      }
+      if (!deepEqual((getState.meta as unknown) as object, meta as object)) {
+        update['meta'] = meta
+        anyUpdate = true
+      }
+      if (anyUpdate) {
+        dispatch({ type: 'SUCCESS3', payload: update })
       }
     }
   }, [cache[resource]])

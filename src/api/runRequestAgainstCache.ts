@@ -1,4 +1,4 @@
-import {FilterObj, QueryParameters, Meta} from '../types'
+import type { FilterObj, QueryParameters, Meta } from '../typings'
 
 const filterFunctions = {
   eq: (lhs: any, rhs: any) => lhs === rhs,
@@ -80,4 +80,4 @@ function runRequestAgainstCache(
 }
 
 export default runRequestAgainstCache
-export {itemMatchedFilters}
+export { itemMatchedFilters }

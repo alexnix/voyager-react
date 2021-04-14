@@ -1,5 +1,6 @@
 import React from 'react'
-import { useGet, useUser } from 'voyager-react'
+import { useGet } from 'voyager-react'
+import { useUser } from '../auth'
 import { useOpen } from '../modal'
 import CreateRestaurant from './CreateRestaurant'
 import List from '../common/List'

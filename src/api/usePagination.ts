@@ -1,7 +1,8 @@
 import useGet from './useGet'
 import { useState, useEffect } from 'react'
-import { RequestOptions, PaginatedGet } from '../types'
-import { defaultRequestOptions, defaultQuery } from './defaults'
+import { defaultRequestOptions, defaultQuery } from './../util/defaults'
+
+import type { RequestOptions, PaginatedGet } from './../typings'
 
 const usePagination = <T = any>(
   path: string,
@@ -31,8 +32,7 @@ const usePagination = <T = any>(
 
   useGet<T>(path, {
     ...getOptions(1),
-    // TODO make this skip actually work, current issue is that immediately after the page changes the useGet hook is still returing data for the previus page, causing this hook (usePagination) to pre-fetch next page
-    skipUntil: bareGet[0].loading == false && bareGet[0].meta?.hasNext === true
+    skipUntil: (currentPage + 1) * pageSize < (bareGet[0].meta?.total || 0)
   })
 
   useEffect(() => {

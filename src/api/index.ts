@@ -1,15 +1,52 @@
 import useGet from './useGet'
-import { RequestState, AuthData } from '../types'
-import { useContext, useState } from 'react'
+import { useContext, useReducer } from 'react'
 import VoyagerContext from '../VoyagerContext'
 import VoyagerCache from '../VoyagerCache'
-import useAuthData from '../localStorage/useAuthData'
 import to from 'await-to-js'
 import produce from 'immer'
-import doNetwork from './doNetowrk'
+import doNetwork from './../util/doNetowrk'
 import { itemMatchedFilters } from './runRequestAgainstCache'
 
+import type { RequestState } from './../typings'
+
 type HookRunFunction<T> = (params: { id?: string; body?: object }) => Promise<T>
+
+const initalizer: RequestState = {
+  loading: false,
+  called: false,
+  data: null,
+  err: null
+}
+
+type Action =
+  | { type: 'START' }
+  | { type: 'SUCCESS'; payload: any }
+  | { type: 'ERROR'; payload: string }
+
+const reducer = (state: RequestState, action: Action): RequestState =>
+  produce(state, (draft) => {
+    switch (action.type) {
+      case 'START': {
+        draft.loading = true
+        return draft
+      }
+      case 'SUCCESS': {
+        draft.loading = false
+        draft.called = true
+        draft.err = null
+        draft.data = action.payload
+        return draft
+      }
+      case 'ERROR': {
+        draft.loading = false
+        draft.called = true
+        draft.data = null
+        draft.err = action.payload
+      }
+      default:
+        throw Error('Unhandled action type.')
+    }
+  })
 
 const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
   path: string
@@ -18,14 +55,8 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
 
   const { url, cacheObservers } = useContext(VoyagerContext)
   const { setCache } = useContext(VoyagerCache)
-  const [authData] = useAuthData<AuthData>()
 
-  const [requestState, setRequestState] = useState<RequestState<T>>({
-    loading: false,
-    called: false,
-    data: null,
-    err: null
-  })
+  const [requestState, dispatch] = useReducer(reducer, initalizer)
 
   function updateCacheAfterDelete(resource: string, data: any) {
     setCache!((prev) =>
@@ -114,59 +145,22 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
   }
 
   const run: HookRunFunction<T> = async ({ id, body }) => {
-    setRequestState({ loading: true, data: null, err: null })
+    dispatch({ type: 'START' })
     let endpoint: string
 
     endpoint = `${url}/${gResource}`
     if (id) endpoint += `/${id}`
 
-    const [err, res] = await to(
-      doNetwork(verb, endpoint, authData?.token, body)
-    )
+    const [err, res] = await to(doNetwork(verb, endpoint, body))
+
     if (err) {
-      setRequestState({
-        loading: false,
-        called: true,
-        data: null,
-        err: err.message,
-        meta: null
-      })
+      dispatch({ type: 'ERROR', payload: err.message })
       return null
-    } else {
-      updateCache(res, verb)
-      setRequestState({
-        loading: false,
-        called: true,
-        data: res,
-        err: null,
-        meta: null
-      })
-      return res
     }
 
-    // const [err, res] = await to(
-    //   fetch(endpoint, {
-    //     method: verb,
-    //     body: JSON.stringify(body),
-    //     headers: {
-    //       'Content-Type': 'application/json',
-    //       Authorization: `Bearer ${authData?.token}`
-    //     }
-    //   })
-    // )
-    //
-    // if (err) {
-    //   setRequestState({ loading: false, data: null, err: err.message })
-    // } else {
-    //   const data = await res?.json()
-    //   if (res?.status === 200) {
-    //     updateCache[verb](data)
-    //     setRequestState({ loading: false, data, err: null })
-    //     return data
-    //   } else {
-    //     setRequestState({ loading: false, data: null, err: data.message })
-    //   }
-    // }
+    updateCache(res, verb)
+    dispatch({ type: 'SUCCESS', payload: res })
+    return res
   }
 
   return [requestState, run]

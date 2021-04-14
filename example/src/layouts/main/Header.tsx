@@ -1,6 +1,6 @@
 import React from 'react'
 
-import { useUser, useLogout } from 'voyager-react'
+import { useUser, useLogout } from '../../auth'
 import { Link } from 'react-router-dom'
 import { useOpen, useClose } from '../../modal'
 

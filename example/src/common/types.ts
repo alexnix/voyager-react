@@ -4,4 +4,5 @@ export interface Restaurant {
   image: string
   avg_rating: number
   num_reviews: number
+  createdAt: any
 }

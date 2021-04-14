@@ -5,12 +5,12 @@ interface Props {
   onDelete: () => void
 }
 
-const Review: React.FC<Props> = ({ review }) => {
+const Review: React.FC<Props> = ({ review, onDelete }) => {
   return (
     <div>
       {review.comment}
       <div>
-        <button>Delete</button>
+        <button onClick={onDelete}>Delete</button>
         <button>Edit</button>
       </div>
     </div>

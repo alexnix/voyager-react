@@ -3,21 +3,11 @@ import to from 'await-to-js'
 type NetworkFunction = (
   method: string,
   endpoint: string,
-  token?: string,
   body?: object
 ) => Promise<any>
 
-const doNetwork: NetworkFunction = async function (
-  method,
-  endpoint,
-  token,
-  body
-) {
+const doNetwork: NetworkFunction = async function (method, endpoint, body) {
   const headers: any = {}
-
-  if (token) {
-    headers.Authorization = `Bearer ${token}`
-  }
 
   if (method === 'POST' || method === 'PUT') {
     headers['Content-Type'] = 'application/json'

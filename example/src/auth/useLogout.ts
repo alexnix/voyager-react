@@ -1,4 +1,4 @@
-import useAuthData from '../localStorage/useAuthData'
+import useAuthData from './useAuthData'
 
 function useLogout() {
   const [, setAuthData] = useAuthData()
