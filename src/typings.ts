@@ -69,9 +69,14 @@ export interface AuthData {
   token: string
 }
 
+export type AuthInjector = (
+  headers: Record<string, string>,
+  body?: any
+) => Promise<[Record<string, string>, any]> | [Record<string, string>, any]
+
 export interface VoyagerProviderProps {
   url: string
-  auth?: string
+  auth?: AuthInjector
   children: React.ReactNode
 }
 

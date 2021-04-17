@@ -31,7 +31,6 @@ type Action =
 
 const reducer = (state: RequestState, action: Action) =>
   produce(state, (draft) => {
-    console.log('action ', action)
     switch (action.type) {
       case 'START': {
         draft.loading = true
@@ -69,7 +68,7 @@ function useGet<T = any>(
   options = { ...defaultRequestOptions, ...options }
   options.query = { ...defaultQuery, ...options.query } as QueryParameters
 
-  const { url, cacheObservers } = useContext(VoyagerContext)
+  const { url, auth, cacheObservers } = useContext(VoyagerContext)
   const { cache, setCache } = useContext(VoyagerCache)
 
   const [getState, dispatch] = useReducer(
@@ -137,7 +136,7 @@ function useGet<T = any>(
     if (!silent) dispatch({ type: 'START' })
 
     setStarted(true)
-    const [err, res] = await to(doNetwork('GET', endpoint))
+    const [err, res] = await to(doNetwork('GET', endpoint, undefined, auth))
     setStarted(false)
 
     if (err) {

@@ -54,7 +54,7 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
 ): [RequestState, HookRunFunction<T>] => {
   const [gResource] = path.split('/')
 
-  const { url, cacheObservers } = useContext(VoyagerContext)
+  const { url, auth, cacheObservers } = useContext(VoyagerContext)
   const { setCache } = useContext(VoyagerCache)
 
   const [requestState, dispatch] = useReducer(reducer, initalizer)
@@ -152,7 +152,7 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
     endpoint = `${url}/${gResource}`
     if (id) endpoint += `/${id}`
 
-    const [err, res] = await to(doNetwork(verb, endpoint, body))
+    const [err, res] = await to(doNetwork(verb, endpoint, body, auth))
 
     if (err) {
       dispatch({ type: 'ERROR', payload: err.message })

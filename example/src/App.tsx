@@ -1,4 +1,4 @@
-import React, { useLayoutEffect } from 'react'
+import React from 'react'
 import { BrowserRouter as Router, Switch, Route } from 'react-router-dom'
 import {
   VoyagerProvider
@@ -16,7 +16,6 @@ import SingleRestaurant from './SingleRestaurant'
 import Login from './Login'
 import Account from './Account'
 import ModalProvider from './modal'
-import fetchIntercept from 'fetch-intercept'
 import { useToken } from './auth'
 
 const Create = () => {
@@ -73,8 +72,6 @@ const Main = () => {
 const MyRouter: React.FC<{}> = () => {
   const user = useUser()
 
-  console.log('user: ', user)
-
   return (
     <Router>
       <Switch>
@@ -104,21 +101,14 @@ const MyRouter: React.FC<{}> = () => {
 
 const App = () => {
   const token = useToken()
-  useLayoutEffect(
-    () =>
-      fetchIntercept.register({
-        request: (url, config) => {
-          if (token) config.headers['Authorization'] = `Bearer ${token!}`
-          return [url, config]
-        }
-      }),
-    []
-  )
 
   return (
     <VoyagerProvider
       url='http://localhost:3001/api/v1'
-      auth='http://localhost:3001/auth'
+      auth={(headers, body) => {
+        headers['Authorization'] = `Bearer ${token}`
+        return [headers, body]
+      }}
     >
       <ModalProvider
         styles={{

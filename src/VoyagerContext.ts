@@ -1,9 +1,9 @@
 import React, { Dispatch, SetStateAction } from 'react'
-import type { CacheObserver } from './typings'
+import type { CacheObserver, AuthInjector } from './typings'
 
 interface VoyagerContext_t {
   url: string
-  auth?: string
+  auth?: AuthInjector
   cacheObservers?: CacheObserver[]
   setCacheObservers?: Dispatch<SetStateAction<CacheObserver[]>>
 }
