@@ -12,14 +12,12 @@ import runRequestAgainstCache from './runRequestAgainstCache'
 import buildEndpoint from './buildEndpoint'
 import doNetwork from './../util/doNetowrk'
 import deepEqual from './../util/deepEqual'
-import findById from './../util/findById'
 
 import type {
   RequestOptions,
   RequestState,
   QueryParameters,
-  GetFunction,
-  ResourceCache
+  GetFunction
 } from './../typings'
 
 type Action =
@@ -69,7 +67,7 @@ function useGet<T = any>(
   options.query = { ...defaultQuery, ...options.query } as QueryParameters
 
   const { url, auth, cacheObservers } = useContext(VoyagerContext)
-  const { cache, setCache } = useContext(VoyagerCache)
+  const { cache, dispatchCacheEvent } = useContext(VoyagerCache)
 
   const [getState, dispatch] = useReducer(
     reducer,
@@ -82,10 +80,6 @@ function useGet<T = any>(
     ? buildEndpoint(url, resource, options.query as QueryParameters)
     : `${url}/${path}`
 
-  const notifyObservers = (data: any, resource: string) => {
-    cacheObservers?.forEach((o) => o('get', data, resource))
-  }
-
   const runAgainstCache = () =>
     runRequestAgainstCache(
       resource,
@@ -95,42 +89,6 @@ function useGet<T = any>(
       id,
       options.spawnFromCache!
     )
-
-  function addToChace(data: any) {
-    setCache!((prev) =>
-      produce(prev, (draft) => {
-        if (draft[resource] === undefined) {
-          const resourceCache: ResourceCache<T> = {
-            data: [],
-            requests: {}
-          }
-          draft[resource] = resourceCache
-        }
-        if (id) {
-          const dup = findById(draft[resource].data, data.data._id)
-          if (dup) {
-            for (const [k, v] of Object.entries(data.data)) {
-              dup[k] = v
-            }
-          } else {
-            draft[resource].data.push(data.data)
-            notifyObservers([data.data], resource)
-          }
-        } else {
-          const newItems = data.data.filter(
-            (i: any) => findById(draft[resource].data, i._id) === undefined
-          )
-          draft[resource].data.push(...newItems)
-          notifyObservers(newItems, resource)
-        }
-        // Save request in cache
-        draft[resource].requests[endpoint] = {
-          queryParams: options.query as QueryParameters,
-          meta: data.meta
-        }
-      })
-    )
-  }
 
   const doGet: GetFunction<T> = async function ({ silent } = {}) {
     if (!silent) dispatch({ type: 'START' })
@@ -144,8 +102,18 @@ function useGet<T = any>(
       return null
     }
 
+    dispatchCacheEvent!({
+      type: 'GET',
+      payload: {
+        resource,
+        endpoint,
+        id,
+        data: res,
+        queryParams: options.query as QueryParameters
+      }
+    })
     dispatch({ type: 'SUCCESS1', payload: res })
-    addToChace(res)
+
     return res
   }
 

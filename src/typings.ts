@@ -93,8 +93,33 @@ export interface ResourceCache<T = any> {
 
 export type CacheValue = Record<string, ResourceCache>
 
+export type CacheReducerAction =
+  | {
+      type: 'GET'
+      payload: {
+        resource: string
+        id: string
+        endpoint: string
+        data: any
+        queryParams: QueryParameters
+      }
+    }
+  | {
+      type: 'POST'
+      payload: { resource: string; data: any }
+    }
+  | {
+      type: 'PUT'
+      payload: { resource: string; data: any }
+    }
+  | {
+      type: 'DELETE'
+      payload: { resource: string; data: any }
+    }
+  | { type: 'MANUAL_EDIT'; payload: CacheValue }
+
 export interface CacheContext {
-  setCache?: Dispatch<SetStateAction<CacheValue>>
+  dispatchCacheEvent?: Dispatch<CacheReducerAction>
   cache: CacheValue
 }
 

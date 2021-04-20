@@ -1,15 +1,14 @@
 import * as React from 'react'
 
 import VoyagerContext from './VoyagerContext'
-import VoyagerCache from './VoyagerCache'
+import VoyagerCache, { VoyagerCacheProvider } from './VoyagerCache'
 
 import { useGet, usePost, usePut, useDetlete } from './api'
 import usePagination from './api/usePagination'
 
-import type { VoyagerProviderProps, CacheObserver, CacheValue } from './typings'
+import type { VoyagerProviderProps, CacheValue, CacheObserver } from './typings'
 
 const VoyagerProvider = ({ url, auth, children }: VoyagerProviderProps) => {
-  const [cache, setCache] = React.useState<CacheValue>({})
   const [cacheObservers, setCacheObservers] = React.useState<CacheObserver[]>(
     []
   )
@@ -17,18 +16,16 @@ const VoyagerProvider = ({ url, auth, children }: VoyagerProviderProps) => {
     <VoyagerContext.Provider
       value={{ url, auth, cacheObservers, setCacheObservers }}
     >
-      <VoyagerCache.Provider value={{ cache, setCache }}>
-        {children}
-      </VoyagerCache.Provider>
+      <VoyagerCacheProvider>{children}</VoyagerCacheProvider>
     </VoyagerContext.Provider>
   )
 }
 
 const useCache: () => [CacheValue, (newCache: CacheValue) => void] = () => {
-  const { cache, setCache } = React.useContext(VoyagerCache)
+  const { cache, dispatchCacheEvent } = React.useContext(VoyagerCache)
 
   const userSetCache = (newCache: CacheValue) => {
-    setCache!(newCache)
+    dispatchCacheEvent!({ type: 'MANUAL_EDIT', payload: newCache })
   }
 
   return [cache, userSetCache]

@@ -32,7 +32,7 @@ const SingleRestaurant = () => {
     }
   )
 
-  const [{ data: reviews }] = useGet(`reviews`, {
+  const [{ data: reviews, meta: reviewsMeta }] = useGet(`reviews`, {
     query: {
       filter: {
         restaurant: ['eq', id]
@@ -71,6 +71,8 @@ const SingleRestaurant = () => {
       </button>
       {topReviews.length !== 0 && <ReviewWrapper data={topReviews[0]} />}
       <h2>Latest Reviews</h2>
+      {reviewsMeta?.total} reviews
+      <br />
       {reviews && <List elements={reviews} ElementItem={ReviewWrapper} />}
     </div>
   )

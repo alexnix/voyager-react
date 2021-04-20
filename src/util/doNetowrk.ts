@@ -35,7 +35,10 @@ const doNetwork: NetworkFunction = async function (
   if (err) {
     throw new Error(err.message)
   } else {
-    const data = await res?.json()
+    const [jsonErr, data] = await to(res!.json())
+    if (jsonErr) {
+      throw new Error(res?.statusText)
+    }
     if (res?.status === 200) {
       return data
     } else {

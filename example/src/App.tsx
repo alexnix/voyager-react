@@ -104,7 +104,7 @@ const App = () => {
 
   return (
     <VoyagerProvider
-      url='http://localhost:3001/api/v1'
+      url='http://localhost:3001/api'
       auth={(headers, body) => {
         headers['Authorization'] = `Bearer ${token}`
         return [headers, body]

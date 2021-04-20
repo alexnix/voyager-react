@@ -5,7 +5,6 @@ import VoyagerCache from '../VoyagerCache'
 import to from 'await-to-js'
 import produce from 'immer'
 import doNetwork from './../util/doNetowrk'
-import { itemMatchedFilters } from './runRequestAgainstCache'
 
 import type { RequestState } from './../typings'
 
@@ -54,73 +53,21 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
 ): [RequestState, HookRunFunction<T>] => {
   const [gResource] = path.split('/')
 
-  const { url, auth, cacheObservers } = useContext(VoyagerContext)
-  const { setCache } = useContext(VoyagerCache)
+  const { url, auth } = useContext(VoyagerContext)
+  const { dispatchCacheEvent } = useContext(VoyagerCache)
 
   const [requestState, dispatch] = useReducer(reducer, initalizer)
 
-  function updateCacheAfterDelete(resource: string, data: any) {
-    setCache!((prev) =>
-      produce(prev, (draft) => {
-        draft[resource].data = draft[resource].data.filter(
-          (i: any) => i._id !== data._id
-        )
-        Object.values(draft[resource].requests).forEach((r: any) => {
-          if (itemMatchedFilters(data, r.queryParams.filter)) {
-            r.meta.total -= 1
-            if (
-              r.queryParams.page_size * (r.queryParams.page_no + 1) >=
-              r.meta.total
-            ) {
-              r.meta.hasNext = false
-            }
-          }
-        })
-      })
-    )
-  }
-
-  function updateCacheAfterPost(resource: string, data: any) {
-    setCache!((prev) =>
-      produce(prev, (draft) => {
-        draft[resource].data.push({ ...data, _sortings: [] })
-        Object.values(draft[resource].requests).forEach((r: any) => {
-          if (itemMatchedFilters(data, r.queryParams.filter)) {
-            r.meta.total += 1
-            if (
-              r.queryParams.page_size * (r.queryParams.page_no + 1) <
-              r.meta.total
-            ) {
-              r.meta.hasNext = true
-            }
-          }
-        })
-      })
-    )
-  }
-
-  function updateCacheAfterPut(resource: string, data: any) {
-    setCache!((prev) =>
-      produce(prev, (draft) => {
-        draft[resource].data = [
-          ...draft[resource].data.filter((i: any) => i._id !== data._id),
-          data
-        ]
-      })
-    )
-  }
-
   const updateCache = (data: any, verb: string) => {
-    const update = {
-      post: updateCacheAfterPost,
-      put: updateCacheAfterPut,
-      delete: updateCacheAfterDelete
-    }
+    const dispatchFactory = (verb: 'POST' | 'PUT' | 'DELETE') => (
+      resource: string,
+      data: any
+    ) => dispatchCacheEvent!({ type: verb, payload: { resource, data } })
 
-    const notifyObservers = (verb: string, data: any, resource: string) => {
-      cacheObservers?.forEach((o) =>
-        o(verb as 'post' | 'put' | 'delete', data, resource)
-      )
+    const update = {
+      post: dispatchFactory('POST'),
+      put: dispatchFactory('PUT'),
+      delete: dispatchFactory('DELETE')
     }
 
     if (data._voyager_api) {
@@ -128,20 +75,15 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
         if (data[verb]) {
           for (const [resource, value] of Object.entries(data[verb])) {
             if (value instanceof Array) {
-              for (const item of value as any[]) {
-                update[verb](resource, item)
-                notifyObservers(verb, item, resource)
-              }
-            } else {
               update[verb](resource, value)
-              notifyObservers(verb, value, resource)
+            } else {
+              update[verb](resource, [value])
             }
           }
         }
       })
     } else {
-      update[verb.toLowerCase()](gResource, data)
-      notifyObservers(verb.toLowerCase(), data, gResource)
+      update[verb.toLowerCase()](gResource, [data])
     }
   }
 
