@@ -104,10 +104,12 @@ const App = () => {
 
   return (
     <VoyagerProvider
-      url='http://localhost:3001/api'
-      auth={(headers, body) => {
-        headers['Authorization'] = `Bearer ${token}`
-        return [headers, body]
+      client={{
+        url: 'http://localhost:3001/api',
+        auth: (headers, body) => {
+          headers['Authorization'] = `Bearer ${token}`
+          return [headers, body]
+        }
       }}
     >
       <ModalProvider

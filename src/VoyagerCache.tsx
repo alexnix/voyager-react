@@ -54,7 +54,7 @@ const reducer: ReducerFactory = (notifyObservers: any) => (
           }
         } else {
           const newItems = data.data.filter(
-            (i: any) => findById(draft[resource].data, i._id) === undefined
+            (i: any) => !findById(draft[resource].data, i._id)
           )
           draft[resource].data.push(...newItems)
           notifyObservers('get', newItems, resource)

@@ -2,19 +2,38 @@ import * as React from 'react'
 
 import VoyagerContext from './VoyagerContext'
 import VoyagerCache, { VoyagerCacheProvider } from './VoyagerCache'
+import * as Connectors from './api/connectors'
 
 import { useGet, usePost, usePut, useDetlete } from './api'
 import usePagination from './api/usePagination'
 
-import type { VoyagerProviderProps, CacheValue, CacheObserver } from './typings'
+import type {
+  VoyagerProviderProps,
+  CacheValue,
+  CacheObserver,
+  APIConnector
+} from './typings'
 
-const VoyagerProvider = ({ url, auth, children }: VoyagerProviderProps) => {
+const VoyagerProvider = ({
+  children,
+  client: { url, auth, connector = {} }
+}: VoyagerProviderProps) => {
+  connector = { ...connector, ...Connectors.VoyagerServer }
+
   const [cacheObservers, setCacheObservers] = React.useState<CacheObserver[]>(
     []
   )
   return (
     <VoyagerContext.Provider
-      value={{ url, auth, cacheObservers, setCacheObservers }}
+      value={{
+        client: {
+          url,
+          auth,
+          connector: connector as APIConnector.Config
+        },
+        cacheObservers,
+        setCacheObservers
+      }}
     >
       <VoyagerCacheProvider>{children}</VoyagerCacheProvider>
     </VoyagerContext.Provider>

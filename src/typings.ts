@@ -74,9 +74,44 @@ export type AuthInjector = (
   body?: any
 ) => Promise<[Record<string, string>, any]> | [Record<string, string>, any]
 
+export namespace APIConnector {
+  export type BuildEndpoint = (
+    url: string,
+    resource: string,
+    query: QueryParameters
+  ) => string
+
+  export interface UnpackQueryResultReturn {
+    data: any[]
+    meta: Meta
+  }
+  export type UnpackQueryResult = (
+    res: Response
+  ) => Promise<UnpackQueryResultReturn>
+
+  export type UnpackMutationResultRetun =
+    | {
+        _voyager_api?: boolean
+        foo: Record<string, any | any[]>
+      }
+    | Record<string, any>
+  export type UnpackMutationResult = (
+    res: Response
+  ) => Promise<UnpackMutationResultRetun>
+
+  export interface Config {
+    buildEndpoint: BuildEndpoint
+    unpackQueryResult: UnpackQueryResult
+    unpackMutationResult: UnpackMutationResult
+  }
+}
+
 export interface VoyagerProviderProps {
-  url: string
-  auth?: AuthInjector
+  client: {
+    url: string
+    auth?: AuthInjector
+    connector?: Partial<APIConnector.Config>
+  }
   children: React.ReactNode
 }
 
@@ -158,3 +193,13 @@ export type CacheObserver = (
   data: any,
   resource: string
 ) => void
+
+export interface VoyagerContext_t {
+  client: {
+    url: string
+    connector: APIConnector.Config
+    auth?: AuthInjector
+  }
+  cacheObservers: CacheObserver[]
+  setCacheObservers: Dispatch<SetStateAction<CacheObserver[]>>
+}

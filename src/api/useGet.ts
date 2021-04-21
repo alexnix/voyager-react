@@ -9,7 +9,6 @@ import {
 } from './../util/defaults'
 import VoyagerCache from '../VoyagerCache'
 import runRequestAgainstCache from './runRequestAgainstCache'
-import buildEndpoint from './buildEndpoint'
 import doNetwork from './../util/doNetowrk'
 import deepEqual from './../util/deepEqual'
 
@@ -17,7 +16,8 @@ import type {
   RequestOptions,
   RequestState,
   QueryParameters,
-  GetFunction
+  GetFunction,
+  VoyagerContext_t
 } from './../typings'
 
 type Action =
@@ -66,7 +66,10 @@ function useGet<T = any>(
   options = { ...defaultRequestOptions, ...options }
   options.query = { ...defaultQuery, ...options.query } as QueryParameters
 
-  const { url, auth, cacheObservers } = useContext(VoyagerContext)
+  const {
+    client: { url, auth, connector },
+    cacheObservers
+  } = useContext(VoyagerContext) as VoyagerContext_t
   const { cache, dispatchCacheEvent } = useContext(VoyagerCache)
 
   const [getState, dispatch] = useReducer(
@@ -77,7 +80,7 @@ function useGet<T = any>(
 
   const [resource, id] = path.split('/')
   const endpoint = !id
-    ? buildEndpoint(url, resource, options.query as QueryParameters)
+    ? connector.buildEndpoint(url, resource, options.query as QueryParameters)
     : `${url}/${path}`
 
   const runAgainstCache = () =>
@@ -102,13 +105,19 @@ function useGet<T = any>(
       return null
     }
 
+    const [errUnpack, data] = await to(connector.unpackQueryResult(res))
+    if (errUnpack) {
+      dispatch({ type: 'ERROR', payload: errUnpack.message })
+      return null
+    }
+
     dispatchCacheEvent!({
       type: 'GET',
       payload: {
         resource,
         endpoint,
         id,
-        data: res,
+        data,
         queryParams: options.query as QueryParameters
       }
     })

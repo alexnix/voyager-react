@@ -1,14 +1,7 @@
-import React, { Dispatch, SetStateAction } from 'react'
-import type { CacheObserver, AuthInjector } from './typings'
+import React from 'react'
+import type { VoyagerContext_t } from './typings'
 
-interface VoyagerContext_t {
-  url: string
-  auth?: AuthInjector
-  cacheObservers?: CacheObserver[]
-  setCacheObservers?: Dispatch<SetStateAction<CacheObserver[]>>
-}
-
-const defaultContext: VoyagerContext_t = { url: '' }
+const defaultContext: Partial<VoyagerContext_t> = {}
 
 const VoyagerContext = React.createContext(defaultContext)
 

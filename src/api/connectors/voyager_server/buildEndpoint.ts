@@ -1,4 +1,4 @@
-import type { QueryParameters } from '../typings'
+import type { QueryParameters } from '../../../typings'
 
 function filterToString(filter: any): string {
   let arr

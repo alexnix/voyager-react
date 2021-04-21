@@ -6,7 +6,7 @@ import to from 'await-to-js'
 import produce from 'immer'
 import doNetwork from './../util/doNetowrk'
 
-import type { RequestState } from './../typings'
+import type { RequestState, VoyagerContext_t } from './../typings'
 
 type HookRunFunction<T> = (params: { id?: string; body?: object }) => Promise<T>
 
@@ -53,7 +53,9 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
 ): [RequestState, HookRunFunction<T>] => {
   const [gResource] = path.split('/')
 
-  const { url, auth } = useContext(VoyagerContext)
+  const {
+    client: { url, auth, connector }
+  } = useContext(VoyagerContext) as VoyagerContext_t
   const { dispatchCacheEvent } = useContext(VoyagerCache)
 
   const [requestState, dispatch] = useReducer(reducer, initalizer)
@@ -101,8 +103,14 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
       return null
     }
 
-    updateCache(res, verb)
-    dispatch({ type: 'SUCCESS', payload: res })
+    const [errUnpack, data] = await to(connector.unpackMutationResult(res))
+    if (errUnpack) {
+      dispatch({ type: 'ERROR', payload: errUnpack.message })
+      return null
+    }
+
+    updateCache(data, verb)
+    dispatch({ type: 'SUCCESS', payload: data })
     return res
   }
 
