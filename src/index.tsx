@@ -4,7 +4,7 @@ import VoyagerContext from './VoyagerContext'
 import VoyagerCache, { VoyagerCacheProvider } from './VoyagerCache'
 import * as Connectors from './api/connectors'
 
-import { useGet, usePost, usePut, useDetlete } from './api'
+import { useGet, usePost, usePut, useDelete } from './api'
 import usePagination from './api/usePagination'
 
 import type {
@@ -66,7 +66,7 @@ export {
   useGet,
   usePost,
   usePut,
-  useDetlete,
+  useDelete,
   usePagination,
   useCache,
   useCacheObserver

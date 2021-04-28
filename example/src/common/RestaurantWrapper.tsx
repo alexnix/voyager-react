@@ -1,5 +1,5 @@
 import React from 'react'
-import { useDetlete } from 'voyager-react'
+import { useDelete } from 'voyager-react'
 import RestaurantComp from './Restaurant'
 import { Restaurant } from './types'
 
@@ -8,7 +8,7 @@ interface Props {
 }
 
 const RestaurantWrapper: React.FC<Props> = ({ data }) => {
-  const [, deleteRestaurant] = useDetlete('restaurants')
+  const [, deleteRestaurant] = useDelete('restaurants')
 
   return (
     <RestaurantComp

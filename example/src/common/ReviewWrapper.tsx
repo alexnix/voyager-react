@@ -1,5 +1,5 @@
 import React from 'react'
-import { useDetlete } from 'voyager-react'
+import { useDelete } from 'voyager-react'
 import Review from './Review'
 
 interface Props {
@@ -7,7 +7,7 @@ interface Props {
 }
 
 const ReviewWrapper: React.FC<Props> = ({ data }) => {
-  const [, deleteReview] = useDetlete('reviews')
+  const [, deleteReview] = useDelete('reviews')
 
   return (
     <Review

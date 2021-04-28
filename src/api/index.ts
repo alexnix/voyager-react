@@ -10,7 +10,7 @@ import type { RequestState, VoyagerContext_t } from './../typings'
 
 type HookRunFunction<T> = (params: { id?: string; body?: object }) => Promise<T>
 
-const initalizer: RequestState = {
+const initializer: RequestState = {
   loading: false,
   called: false,
   data: null,
@@ -58,7 +58,7 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
   } = useContext(VoyagerContext) as VoyagerContext_t
   const { dispatchCacheEvent } = useContext(VoyagerCache)
 
-  const [requestState, dispatch] = useReducer(reducer, initalizer)
+  const [requestState, dispatch] = useReducer(reducer, initializer)
 
   const updateCache = (data: any, verb: string) => {
     const dispatchFactory = (verb: 'POST' | 'PUT' | 'DELETE') => (
@@ -119,6 +119,6 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
 
 const usePost = apiHook('POST')
 const usePut = apiHook('PUT')
-const useDetlete = apiHook('DELETE')
+const useDelete = apiHook('DELETE')
 
-export { usePost, usePut, useDetlete, useGet }
+export { usePost, usePut, useDelete, useGet }
