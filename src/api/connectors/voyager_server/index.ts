@@ -17,6 +17,6 @@ const foreWardAsT = <T>() => async (res: Response) => {
 
 const unpackQueryResult: APIConnector.UnpackQueryResult = foreWardAsT<APIConnector.UnpackQueryResultReturn>()
 
-const unpackMutationResult: APIConnector.UnpackMutationResult = foreWardAsT<APIConnector.UnpackMutationResultRetun>()
+const unpackMutationResult: APIConnector.UnpackMutationResult = foreWardAsT<APIConnector.UnpackMutationResultReturn>()
 
 export { buildEndpoint, unpackQueryResult, unpackMutationResult }

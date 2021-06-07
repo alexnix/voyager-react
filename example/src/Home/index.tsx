@@ -1,5 +1,5 @@
-import React, { useState } from 'react'
-import { usePagination } from 'voyager-react'
+import React, { useState, useCallback } from 'react'
+import { usePagination, useCacheObserver } from 'voyager-react'
 import List from '../common/List'
 import RestaurantWrapper from '../common/RestaurantWrapper'
 
@@ -19,8 +19,13 @@ const Home = () => {
     }
   })
 
-  console.log('data: ', data)
-  console.log('Home render')
+  useCacheObserver(
+    useCallback((a: any, b: any, c: any) => {
+      console.log('a,b,c: ', a, b, c)
+    }, [])
+  )
+
+  console.log('loading, error, data ', loading, error, data)
 
   if (loading) return null
 

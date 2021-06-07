@@ -89,7 +89,7 @@ export namespace APIConnector {
     res: Response
   ) => Promise<UnpackQueryResultReturn>
 
-  export type UnpackMutationResultRetun =
+  export type UnpackMutationResultReturn =
     | {
         _voyager_api?: boolean
         foo: Record<string, any | any[]>
@@ -97,7 +97,7 @@ export namespace APIConnector {
     | Record<string, any>
   export type UnpackMutationResult = (
     res: Response
-  ) => Promise<UnpackMutationResultRetun>
+  ) => Promise<UnpackMutationResultReturn>
 
   export interface Config {
     buildEndpoint: BuildEndpoint
@@ -106,12 +106,14 @@ export namespace APIConnector {
   }
 }
 
+export interface VoyagerClient {
+  url: string
+  auth?: AuthInjector
+  connector?: Partial<APIConnector.Config>
+}
+
 export interface VoyagerProviderProps {
-  client: {
-    url: string
-    auth?: AuthInjector
-    connector?: Partial<APIConnector.Config>
-  }
+  client: VoyagerClient
   children: React.ReactNode
 }
 

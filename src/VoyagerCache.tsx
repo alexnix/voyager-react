@@ -3,7 +3,8 @@ import React, {
   ReactNode,
   useReducer,
   useContext,
-  FC
+  FC,
+  useMemo
 } from 'react'
 import type { CacheContext, CacheReducerAction, ResourceCache } from './typings'
 
@@ -27,7 +28,7 @@ type ReducerFactory = (
   notify: any
 ) => (state: CacheValue, action: CacheReducerAction) => CacheValue
 
-const reducer: ReducerFactory = (notifyObservers: any) => (
+const reducerFactory: ReducerFactory = (notifyObservers: any) => (
   state: CacheValue,
   action: CacheReducerAction
 ) =>
@@ -35,13 +36,14 @@ const reducer: ReducerFactory = (notifyObservers: any) => (
     switch (action.type) {
       case 'GET': {
         const { resource, id, endpoint, data, queryParams } = action.payload
-        if (draft[resource] === undefined) {
+        if (!draft[resource]) {
           const resourceCache: ResourceCache = {
             data: [],
             requests: {}
           }
           draft[resource] = resourceCache
         }
+
         if (id) {
           const dup = findById(draft[resource].data, data.data._id)
           if (dup) {
@@ -59,6 +61,7 @@ const reducer: ReducerFactory = (notifyObservers: any) => (
           draft[resource].data.push(...newItems)
           notifyObservers('get', newItems, resource)
         }
+
         draft[resource].requests[endpoint] = {
           queryParams,
           meta: data.meta
@@ -95,7 +98,7 @@ const reducer: ReducerFactory = (notifyObservers: any) => (
           ...draft[resource].data.filter((i: any) => !findById(data, i._id)),
           ...data
         ]
-        notifyObservers('PUT', data, resource)
+        notifyObservers('put', data, resource)
         return draft
       }
       case 'DELETE': {
@@ -108,7 +111,7 @@ const reducer: ReducerFactory = (notifyObservers: any) => (
 
         notifyObservers('delete', data, resource)
 
-        // Upodate total and hasNext fields for each request
+        // Update total and hasNext fields for each request
         Object.values(draft[resource].requests).forEach((r: any) => {
           const cntItemsMatchedFilters = data.filter((i: any) =>
             itemMatchedFilters(i, r.queryParams.filter)
@@ -136,13 +139,16 @@ const reducer: ReducerFactory = (notifyObservers: any) => (
 const VoyagerCacheProvider: FC<VoyagerCacheProviderProps> = ({ children }) => {
   const { cacheObservers } = useContext(VoyagerContext)
 
-  const notifyObservers = (verb: string, data: any, resource: string) => {
-    cacheObservers?.forEach((o) =>
-      o(verb as 'get' | 'post' | 'put' | 'delete', data, resource)
-    )
-  }
+  const reducer = useMemo(() => {
+    const notifyObservers = (verb: string, data: any, resource: string) => {
+      cacheObservers?.forEach((o) =>
+        o(verb as 'get' | 'post' | 'put' | 'delete', data, resource)
+      )
+    }
+    return reducerFactory(notifyObservers)
+  }, [cacheObservers])
 
-  const [cache, dispatchCacheEvent] = useReducer(reducer(notifyObservers), {})
+  const [cache, dispatchCacheEvent] = useReducer(reducer, {})
 
   return (
     <VoyagerCache.Provider value={{ cache, dispatchCacheEvent }}>

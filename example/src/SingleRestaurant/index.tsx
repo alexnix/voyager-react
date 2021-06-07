@@ -19,11 +19,7 @@ function useTopReview(id: string) {
 }
 
 const SingleRestaurant = () => {
-  const { id } = useParams()
-
-  useCacheObserver(
-    useCallback((verb: string) => console.log('verb: ', verb), [])
-  )
+  const { id } = useParams<{id:string}>()
 
   const [{ data: restaurant, loading: restaurantLoading }] = useGet(
     `restaurants/${id}`,
@@ -46,8 +42,8 @@ const SingleRestaurant = () => {
   ] = useTopReview(id)
 
   const obs = useCallback(
-    (verb, data) => {
-      console.log('verb, data: ', verb, data)
+    (verb, data, resource) => {
+      console.log('verb, data, resource: ', verb, data, resource)
     },
     [getTopReview]
   )

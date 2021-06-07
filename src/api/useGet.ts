@@ -171,7 +171,7 @@ function useGet<T = any>(
     if (!options.lazy && options.skipUntil && !started) {
       doCachedGet({ silent: false, policy: options.policy })
     }
-  }, [JSON.stringify(options.query), options.skipUntil])
+  }, [JSON.stringify(options)])
 
   useEffect(() => {
     if (options.policy !== 'no-cache') {
