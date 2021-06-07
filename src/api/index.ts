@@ -8,7 +8,10 @@ import doNetwork from './../util/doNetowrk'
 
 import type { RequestState, VoyagerContext_t } from './../typings'
 
-type HookRunFunction<T> = (params: { id?: string; body?: object }) => Promise<T>
+type HookRunFunction<T> = (params: {
+  id?: string
+  body?: object
+}) => Promise<T | any>
 
 const initializer: RequestState = {
   loading: false,
@@ -111,7 +114,7 @@ const apiHook = (verb: 'POST' | 'PUT' | 'DELETE') => <T>(
 
     updateCache(data, verb)
     dispatch({ type: 'SUCCESS', payload: data })
-    return res
+    return data
   }
 
   return [requestState, run]
