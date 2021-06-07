@@ -70,6 +70,13 @@ const reducerFactory: ReducerFactory = (notifyObservers: any) => (
       }
       case 'POST': {
         const { resource, data } = action.payload
+        if (!draft[resource]) {
+          const resourceCache: ResourceCache = {
+            data: [],
+            requests: {}
+          }
+          draft[resource] = resourceCache
+        }
 
         draft[resource].data.push(...data)
 
@@ -94,6 +101,14 @@ const reducerFactory: ReducerFactory = (notifyObservers: any) => (
       }
       case 'PUT': {
         const { resource, data } = action.payload
+        if (!draft[resource]) {
+          const resourceCache: ResourceCache = {
+            data: [],
+            requests: {}
+          }
+          draft[resource] = resourceCache
+        }
+
         draft[resource].data = [
           ...draft[resource].data.filter((i: any) => !findById(data, i._id)),
           ...data
@@ -103,6 +118,13 @@ const reducerFactory: ReducerFactory = (notifyObservers: any) => (
       }
       case 'DELETE': {
         const { resource, data } = action.payload
+        if (!draft[resource]) {
+          const resourceCache: ResourceCache = {
+            data: [],
+            requests: {}
+          }
+          draft[resource] = resourceCache
+        }
 
         // Remove deleted items from cache
         draft[resource].data = draft[resource].data.filter(
