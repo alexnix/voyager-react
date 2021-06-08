@@ -20,22 +20,18 @@ export interface VoyagerGetResult<T> {
 }
 
 export type Filter = [
-  'eq' | 'neq' | 'regex' | 'in' | 'gt' | 'gte' | 'lt' | 'lte',
+  'eq' | 'ne' | 'regex' | 'in' | 'gt' | 'gte' | 'lt' | 'lte',
   string | number | null | Array<string | number | null>
 ]
 
 export type Sort = [string, 'asc' | 'desc']
-
-export interface FilterObj {
-  [key: string]: Filter
-}
 
 export interface QueryParameters {
   select: string[]
   page_size: number
   page_no: number
   sort_by: Sort
-  filter: FilterObj
+  filter: Record<string, Filter>
 }
 
 export interface RequestOptions {
