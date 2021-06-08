@@ -1,8 +1,8 @@
-import type { FilterObj, QueryParameters, Meta } from '../typings'
+import type { QueryParameters, Meta, Filter } from '../typings'
 
 const filterFunctions = {
   eq: (lhs: any, rhs: any) => lhs === rhs,
-  neq: (lhs: any, rhs: any) => lhs !== rhs,
+  ne: (lhs: any, rhs: any) => lhs !== rhs,
   in: (lhs: any, rhs: Array<any>) => {
     if (Array.isArray(lhs)) {
       for (const i in lhs) {
@@ -21,7 +21,10 @@ const filterFunctions = {
   lte: (lhs: number, rhs: number) => lhs <= rhs
 }
 
-function itemMatchedFilters(item: any, filters: FilterObj): boolean {
+function itemMatchedFilters(
+  item: any,
+  filters: Record<string, Filter>
+): boolean {
   for (const [prop, filter] of Object.entries(filters)) {
     if (!filterFunctions[filter[0]](item[prop], filter[1])) {
       return false
