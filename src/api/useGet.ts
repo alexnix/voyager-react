@@ -121,9 +121,9 @@ function useGet<T = any>(
         queryParams: options.query as QueryParameters
       }
     })
-    dispatch({ type: 'SUCCESS1', payload: res })
+    dispatch({ type: 'SUCCESS1', payload: data })
 
-    return res
+    return data
   }
 
   // cache-first: check in cache and if found don`t do anything else do netowrk

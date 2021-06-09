@@ -169,7 +169,7 @@ export interface GetFunctionParams {
   policy?: 'cache-first' | 'cache-and-network' | 'network-first' | 'no-cache'
 }
 
-export type GetFunction<T> = (params?: GetFunctionParams) => Promise<T>
+export type GetFunction<T> = (params?: GetFunctionParams) => Promise<T | any>
 
 interface PaginationData {
   getNextPage: () => void
