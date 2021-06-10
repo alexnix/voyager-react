@@ -56,7 +56,7 @@ const reducerFactory: ReducerFactory = (notifyObservers: any) => (
           }
         } else {
           data.data.forEach((i: any) => {
-            const dup = findById(data[resource].data, i._id)
+            const dup = findById(draft[resource].data, i._id)
             if (dup) {
               for (const [k, v] of Object.entries(i)) {
                 dup[k] = v
