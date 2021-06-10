@@ -55,11 +55,22 @@ const reducerFactory: ReducerFactory = (notifyObservers: any) => (
             notifyObservers('get', [data.data], resource)
           }
         } else {
-          const newItems = data.data.filter(
-            (i: any) => !findById(draft[resource].data, i._id)
-          )
-          draft[resource].data.push(...newItems)
-          notifyObservers('get', newItems, resource)
+          data.data.forEach((i: any) => {
+            const dup = findById(data[resource].data, i._id)
+            if (dup) {
+              for (const [k, v] of Object.entries(i)) {
+                dup[k] = v
+              }
+            } else {
+              draft[resource].data.push(i)
+            }
+          })
+          notifyObservers('get', data.data, resource)
+          // const newItems = data.data.filter(
+          //   (i: any) => !findById(draft[resource].data, i._id)
+          // )
+          // draft[resource].data.push(...newItems)
+          // notifyObservers('get', newItems, resource)
         }
 
         draft[resource].requests[endpoint] = {

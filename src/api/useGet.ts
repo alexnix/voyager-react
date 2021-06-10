@@ -132,8 +132,13 @@ function useGet<T = any>(
   // no-cahce: do netowrk and don`t cache result
 
   const doCachedGet: GetFunction<T> = useCallback(
-    async (params = { silent: false, policy: options.policy }) => {
-      params = { silent: false, policy: options.policy, ...params }
+    async (params = {}) => {
+      params = {
+        silent: false,
+        policy: options.policy,
+        skipUntil: options.skipUntil,
+        ...params
+      }
 
       const { policy } = params
       let cacheMiss = true

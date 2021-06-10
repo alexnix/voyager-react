@@ -167,6 +167,7 @@ export type AuthFunction = (params: AuthFunctionParams) => Promise<void>
 export interface GetFunctionParams {
   silent?: boolean
   policy?: 'cache-first' | 'cache-and-network' | 'network-first' | 'no-cache'
+  skipUntil?: boolean
 }
 
 export type GetFunction<T> = (params?: GetFunctionParams) => Promise<T | any>
