@@ -12,7 +12,9 @@ import produce from 'immer'
 import type { CacheValue } from './typings'
 import VoyagerContext from './VoyagerContext'
 import findById from './util/findById'
-import { itemMatchedFilters } from './api/runRequestAgainstCache'
+import runRequestAgainstCache, {
+  itemMatchedFilters
+} from './api/runRequestAgainstCache'
 
 const defaultContext: CacheContext = {
   cache: {}
@@ -65,6 +67,30 @@ const reducerFactory: ReducerFactory = (notifyObservers: any) => (
               draft[resource].data.push(i)
             }
           })
+
+          // Run same exact request on cahce, if any returned item
+          // is not int he new data then it must have changed
+          // We cannot now *how* it changed so we will just remove item
+          // Other requests that might have depended on it will thus become invalid
+          // and will be refetched when needed
+          const [valid, prevData] = runRequestAgainstCache(
+            resource,
+            endpoint,
+            state,
+            queryParams,
+            '',
+            false
+          )
+          if (valid) {
+            prevData.forEach((i: any) => {
+              if (
+                itemMatchedFilters(i, queryParams.filter) &&
+                !findById(data.data, i._id)
+              ) {
+                draft[resource].data.splice(draft[resource].data.indexOf(i), 1)
+              }
+            })
+          }
           notifyObservers('get', data.data, resource)
           // const newItems = data.data.filter(
           //   (i: any) => !findById(draft[resource].data, i._id)
